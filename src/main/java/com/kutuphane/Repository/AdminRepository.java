@@ -1,0 +1,7 @@
+package com.kutuphane.Repository;
+
+import com.kutuphane.Entity.Admin;
+import org.springframework.data.repository.CrudRepository;
+
+public interface AdminRepository extends CrudRepository<Admin,Integer> {
+}
