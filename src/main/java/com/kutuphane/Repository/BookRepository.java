@@ -1,7 +1,15 @@
 package com.kutuphane.Repository;
 
 import com.kutuphane.Entity.Book;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface BookRepository extends CrudRepository<Book, String> {
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface BookRepository extends JpaRepository<Book, Long> {
+    Optional<Book> findByIsbn(String isbn);
+    List<Book> findByTitleContainingIgnoreCase(String title); // Başlıkta arama
+    List<Book> findByAuthor_FirstNameContainingIgnoreCaseOrAuthor_LastNameContainingIgnoreCase(String firstName, String lastName); // Yazar adına göre arama
 }

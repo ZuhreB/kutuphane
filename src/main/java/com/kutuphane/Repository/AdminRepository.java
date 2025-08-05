@@ -1,7 +1,7 @@
 package com.kutuphane.Repository;
 
-import com.kutuphane.Entity.Admin;
+import com.kutuphane.Entity.Publisher;
 import org.springframework.data.repository.CrudRepository;
 
-public interface AdminRepository extends CrudRepository<Admin,Integer> {
+public interface AdminRepository extends CrudRepository<Publisher,Integer> {
 }
