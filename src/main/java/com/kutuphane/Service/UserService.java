@@ -25,6 +25,11 @@ public class UserService {
     }
 
     public User saveUser(User user) {
+        if(userRepository.existsByUsername(user.getUsername()) || userRepository.existsByEmail(user.getEmail()))
+        {
+            throw new RuntimeException("Bu hesap zaten var");
+        }
+        user.setRole("USER");
         return userRepository.save(user);
     }
 
