@@ -1,10 +1,11 @@
 package com.kutuphane.Entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 
+@Getter
+@Setter
+@ToString
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

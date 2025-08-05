@@ -1,11 +1,13 @@
 package com.kutuphane.Entity;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@ToString
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

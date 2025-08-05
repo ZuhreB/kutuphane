@@ -1,9 +1,14 @@
 package com.kutuphane.Entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
+@Getter
+@Setter
+@ToString
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "Users")
 public class User {

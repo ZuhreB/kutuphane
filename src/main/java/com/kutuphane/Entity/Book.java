@@ -1,10 +1,15 @@
 package com.kutuphane.Entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import java.time.LocalDateTime;
+import lombok.*;
 
+import java.time.LocalDateTime;
+@Getter
+@Setter
+@ToString
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "Books")
 public class Book {
