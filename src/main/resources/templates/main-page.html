@@ -10,7 +10,17 @@
     .navbar .logo { font-size: 1.5rem; font-weight: bold; color: #1877f2; }
     .navbar .user-info a { color: #d93025; text-decoration: none; font-weight: 600; }
     .container { max-width: 900px; margin: 2rem auto; background-color: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-    h1 { color: #1c1e21; }
+    h1, h2 { color: #1c1e21; }
+    .search-form { display: flex; gap: 10px; margin-bottom: 2rem; }
+    .search-form input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
+    .search-form select, .search-form button { padding: 10px; border: 1px solid #ddd; border-radius: 6px; background-color: #f5f6f7; font-size: 1rem; }
+    .search-form button { background-color: #1877f2; color: white; border-color: #1877f2; cursor: pointer; font-weight: 600; }
+    .search-form button:hover { background-color: #166fe5; }
+    .results-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .results-table th, .results-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    .results-table th { background-color: #f2f2f2; font-weight: 600; }
+    .results-table tbody tr:nth-child(odd) { background-color: #f9f9f9; }
+    .no-results { color: #606770; background-color: #f0f2f5; padding: 1rem; border-radius: 6px; text-align: center; }
   </style>
 </head>
 <body>
@@ -23,15 +33,73 @@
 </div>
 
 <div class="container">
-
-  <h1>Welcome, <span th:text="${userName}">User</span>!</h1>//controllerdan gelecek olan isim
+  <h1>Welcome, <span th:text="${userName}">User</span>!</h1>
   <p>You can start searching for books or manage your account.</p>
 
   <hr style="margin: 2rem 0;">
 
   <h2>Book Search</h2>
-  <p>The book search feature will be implemented here soon.</p>
+
+
+  <form id="search-form" th:action="@{/search/by-title}" method="get" class="search-form">
+    <select id="search-type" name="type">
+      <!-- Her seçeneğin hangi URL'e gideceğini 'data-action' ile belirtiyoruz -->
+      <option value="title"  data-action="/search/by-title" th:selected="${#strings.defaultString(lastType, 'title') == 'title'}">Title</option>
+      <option value="author" data-action="/search/by-author" th:selected="${lastType == 'author'}">Author</option>
+      <option value="isbn"   data-action="/search/by-isbn"   th:selected="${lastType == 'isbn'}">ISBN</option>
+    </select>
+    <input type="text" name="query" placeholder="Search for books..." th:value="${lastQuery}" required>
+    <button type="submit">Search</button>
+  </form>
+
+  <!-- Arama Sonuçları Bölümü -->
+  <div th:if="${books != null}">
+    <!-- Sonuç bulunamadıysa -->
+    <div th:if="${#lists.isEmpty(books)}" class="no-results">
+      No books found for your query. Please try a different search term.
+    </div>
+
+    <!-- Sonuçlar bulunduysa -->
+    <table th:unless="${#lists.isEmpty(books)}" class="results-table">
+      <thead>
+      <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>ISBN</th>
+        <th>Available</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="book : ${books}">
+        <td th:text="${book.title}">The Great Gatsby</td>
+        <td th:text="${book.author != null ? book.author.firstName + ' ' + book.author.lastName : 'N/A'}">F. Scott Fitzgerald</td>
+        <td th:text="${book.isbn}">978-0743273565</td>
+        <td th:text="${book.availableCopies}">5</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
+
+<script>
+  // Bu script, seçilen arama türüne göre formun 'action' URL'ini dinamik olarak günceller.
+  const searchForm = document.getElementById('search-form');
+  const searchTypeSelect = document.getElementById('search-type');
+
+  const updateFormAction = () => {
+      const selectedOption = searchTypeSelect.options[searchTypeSelect.selectedIndex];
+      const actionUrl = selectedOption.getAttribute('data-action');
+      if (actionUrl) {
+          searchForm.setAttribute('action', actionUrl);
+      }
+  };
+
+  // Kullanıcı yeni bir tür seçtiğinde URL'i güncelle.
+  searchTypeSelect.addEventListener('change', updateFormAction);
+
+  // Sayfa ilk yüklendiğinde de doğru URL'in ayarlandığından emin ol.
+  document.addEventListener('DOMContentLoaded', updateFormAction);
+</script>
 
 </body>
 </html>
