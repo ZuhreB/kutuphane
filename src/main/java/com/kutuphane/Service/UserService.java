@@ -40,4 +40,20 @@ public class UserService {
     public Optional<User> getUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
+    public User loginUser(String username, String password) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            System.out.println("-----------------------------------------");
+            System.out.println("[DEBUG] Formdan Gelen Şifre: '" + password + "'");
+            System.out.println("[DEBUG] Veritabanındaki Şifre: '" + user.getPassword() + "'");
+            System.out.println("[DEBUG] Şifreler Eşleşiyor mu? " + password.equals(user.getPassword()));
+            System.out.println("-----------------------------------------");
+
+            if (password.equals(user.getPassword())) {
+                return user;
+            }
+        }
+        return null;
+    }
 }

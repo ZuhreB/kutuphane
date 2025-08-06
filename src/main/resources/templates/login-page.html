@@ -110,33 +110,31 @@
 <body>
 
 <div class="login-container">
-    <h2>Hesabınıza Giriş Yapın</h2>
+    <h2>Log in to your account </h2>
+    <div th:if="${loginError}" style="padding: 1rem; margin-bottom: 1 rem; border-radius: 6px; background-color: #fdeeee; color: #d93025; text-align: senter; font-weight: 500;">
+        <p th:text="${loginError}"></p>
+    </div>
 
-    <!--
-      Bu form, Spring Security ile entegrasyon için standartları kullanır.
-      th:action="@{/login}" -> Form gönderildiğinde /login adresine POST isteği yapar.
-      name="username" ve name="password" -> Spring Security'nin beklediği varsayılan alan adlarıdır.
-    -->
     <form th:action="@{/login}" method="post">
         <div class="form-group">
-            <label for="username">Kullanıcı Adı</label>
+            <label for="username">User Name</label>
             <input type="text" id="username" name="username" placeholder="Kullanıcı adınızı girin" required>
         </div>
         <div class="form-group">
-            <label for="password">Şifre</label>
+            <label for="password">Password</label>
             <input type="password" id="password" name="password" placeholder="Şifrenizi girin" required>
         </div>
-        <button type="submit" class="login-btn">Giriş Yap</button>
+        <button type="submit" class="login-btn">Log in</button>
 
         <div class="options">
             <label>
-                <input type="checkbox" name="remember-me"> Beni Hatırla
+                <input type="checkbox" name="remember-me"> Remember me
             </label>
-            <a href="#">Şifremi unuttum</a>
+            <a href="#">Forgot password?</a>
         </div>
 
         <div class="signup-link">
-            Hesabınız yok mu? <a th:href="@{/register}">Yeni Hesap Oluştur</a>
+            Do not have an account? <a th:href="@{/register}">Create a new account</a>
         </div>
     </form>
 </div>

@@ -46,4 +46,8 @@ public class Book {
 
     @Column(name = "AddedDate") // admin ekleme tarihinden kitap aramak isterse veya kaç kitap eklenmiş gibi farklı şeylere bakılabilmesi için
     private LocalDateTime addedDate;
+
+    @Column(name ="Topic",nullable=yes)
+    private String topic;
+
 }
