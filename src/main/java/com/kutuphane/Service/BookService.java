@@ -38,9 +38,9 @@ public class BookService {
         return bookRepository.findByTopicContainingIgnoreCase(topic);
     }
 
-    public Optional<Book> searchByISBN(String isbn){
+    public List<Book> searchByISBN(String isbn){
         if(isbn==null || isbn.isBlank()){
-            return Optional.empty();
+            return Collections.emptyList();
         }
         return bookRepository.findByIsbnIgnoreCase(isbn);
     }

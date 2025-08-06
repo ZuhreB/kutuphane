@@ -14,8 +14,9 @@
     .search-form { display: flex; gap: 10px; margin-bottom: 2rem; }
     .search-form input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
     .search-form select, .search-form button { padding: 10px; border: 1px solid #ddd; border-radius: 6px; background-color: #f5f6f7; font-size: 1rem; }
-    .search-form button { background-color: #1877f2; color: white; border-color: #1877f2; cursor: pointer; font-weight: 600; }
+    .search-form button { background-color: #1877f2; color: white; border-color: #1877f2; cursor: pointer; font-weight: 600; transition: background-color 0.2s; }
     .search-form button:hover { background-color: #166fe5; }
+    .search-form button:disabled { background-color: #92baf2; cursor: not-allowed; }
     .results-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     .results-table th, .results-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
     .results-table th { background-color: #f2f2f2; font-weight: 600; }
@@ -40,65 +41,100 @@
 
   <h2>Book Search</h2>
 
-
-  <form id="search-form" th:action="@{/search/by-title}" method="get" class="search-form">
+  <!-- Formun action ve method'u artık JS tarafından yönetilecek -->
+  <form id="search-form" class="search-form">
     <select id="search-type" name="type">
-      <!-- Her seçeneğin hangi URL'e gideceğini 'data-action' ile belirtiyoruz -->
-      <option value="title"  data-action="/search/by-title" th:selected="${#strings.defaultString(lastType, 'title') == 'title'}">Title</option>
-      <option value="author" data-action="/search/by-author" th:selected="${lastType == 'author'}">Author</option>
-      <option value="isbn"   data-action="/search/by-isbn"   th:selected="${lastType == 'isbn'}">ISBN</option>
+      <option value="title">Title</option>
+      <option value="author">Author</option>
+      <option value="isbn">ISBN</option>
     </select>
-    <input type="text" name="query" placeholder="Search for books..." th:value="${lastQuery}" required>
-    <button type="submit">Search</button>
+    <input type="text" id="search-query" name="query" placeholder="Search for books..." required>
+    <button type="submit" id="search-button">Search</button>
   </form>
 
-  <!-- Arama Sonuçları Bölümü -->
-  <div th:if="${books != null}">
-    <!-- Sonuç bulunamadıysa -->
-    <div th:if="${#lists.isEmpty(books)}" class="no-results">
-      No books found for your query. Please try a different search term.
-    </div>
-
-    <!-- Sonuçlar bulunduysa -->
-    <table th:unless="${#lists.isEmpty(books)}" class="results-table">
-      <thead>
-      <tr>
-        <th>Title</th>
-        <th>Author</th>
-        <th>ISBN</th>
-        <th>Available</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="book : ${books}">
-        <td th:text="${book.title}">The Great Gatsby</td>
-        <td th:text="${book.author != null ? book.author.firstName + ' ' + book.author.lastName : 'N/A'}">F. Scott Fitzgerald</td>
-        <td th:text="${book.isbn}">978-0743273565</td>
-        <td th:text="${book.availableCopies}">5</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- Bu div'in içeriği JavaScript tarafından dinamik olarak doldurulacak -->
+  <div id="search-results-container"></div>
 </div>
 
 <script>
-  // Bu script, seçilen arama türüne göre formun 'action' URL'ini dinamik olarak günceller.
+  // Gerekli HTML elementlerini seçiyoruz
   const searchForm = document.getElementById('search-form');
   const searchTypeSelect = document.getElementById('search-type');
+  const searchQueryInput = document.getElementById('search-query');
+  const searchButton = document.getElementById('search-button');
+  const resultsContainer = document.getElementById('search-results-container');
 
-  const updateFormAction = () => {
-      const selectedOption = searchTypeSelect.options[searchTypeSelect.selectedIndex];
-      const actionUrl = selectedOption.getAttribute('data-action');
-      if (actionUrl) {
-          searchForm.setAttribute('action', actionUrl);
+  // Form gönderildiğinde çalışacak fonksiyon
+  searchForm.addEventListener('submit', async (event) => {
+      // Formun sayfayı yenilemesini engelle
+      event.preventDefault();
+
+      const query = searchQueryInput.value.trim();
+      const type = searchTypeSelect.value;
+
+      if (!query) {
+          resultsContainer.innerHTML = `<div class="no-results">Please enter a search term.</div>`;
+          return;
       }
-  };
 
-  // Kullanıcı yeni bir tür seçtiğinde URL'i güncelle.
-  searchTypeSelect.addEventListener('change', updateFormAction);
+      // Arama sırasında kullanıcıya geri bildirim ver
+      searchButton.disabled = true;
+      searchButton.textContent = 'Searching...';
+      resultsContainer.innerHTML = `<div class="no-results">Loading...</div>`;
 
-  // Sayfa ilk yüklendiğinde de doğru URL'in ayarlandığından emin ol.
-  document.addEventListener('DOMContentLoaded', updateFormAction);
+      try {
+          // API'a GET isteği gönder
+          const response = await fetch(`/api/books/search?type=${type}&query=${query}`);
+
+          if (!response.ok) {
+              throw new Error('Network response was not ok.');
+          }
+
+          const books = await response.json();
+          renderResults(books); // Sonuçları ekrana çiz
+
+      } catch (error) {
+          console.error('Fetch error:', error);
+          resultsContainer.innerHTML = `<div class="no-results" style="background-color: #fdeeee; color: #d93025;">An error occurred while searching. Please try again.</div>`;
+      } finally {
+          // Arama bitince butonu tekrar aktif et
+          searchButton.disabled = false;
+          searchButton.textContent = 'Search';
+      }
+  });
+
+  // Gelen kitap verisini alıp HTML tablosu oluşturan fonksiyon
+  function renderResults(books) {
+      if (!books || books.length === 0) {
+          resultsContainer.innerHTML = `<div class="no-results">No books found for your query. Please try a different search term.</div>`;
+          return;
+      }
+
+      const tableRows = books.map(book => `
+          <tr>
+              <td>${book.title || 'N/A'}</td>
+              <td>${book.author ? (book.author.firstName + ' ' + book.author.lastName) : 'N/A'}</td>
+              <td>${book.isbn || 'N/A'}</td>
+              <td>${book.availableCopies}</td>
+          </tr>
+      `).join('');
+
+      resultsContainer.innerHTML = `
+          <table class="results-table">
+              <thead>
+                  <tr>
+                      <th>Title</th>
+                      <th>Author</th>
+                      <th>ISBN</th>
+                      <th>Available</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  ${tableRows}
+              </tbody>
+          </table>
+      `;
+  }
 </script>
 
 </body>
