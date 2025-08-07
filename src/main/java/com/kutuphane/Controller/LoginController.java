@@ -4,11 +4,13 @@ import com.kutuphane.Entity.User;
 import com.kutuphane.Service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class LoginController {
@@ -16,25 +18,29 @@ public class LoginController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/login")
-    public String ControlLogin(@RequestParam String username,
-                              @RequestParam String password,
-                              HttpSession session,
-                              Model model) {
-
-     User loggedUser = userService.loginUser(username,password);
-     if(loggedUser!=null){
-         session.setAttribute("loggedUser", loggedUser);
-                 return "redirect:/main";
-     }
-        // 5. Giriş başarısızsa, login sayfasına hata mesajı vercem
-        model.addAttribute("loginError", "Invalid username or password.");
+    @GetMapping({"/", "/login"})
+    public String showLoginPage() {
         return "login-page";
     }
 
+    @PostMapping("/login")
+    @ResponseBody
+    public ResponseEntity<?> Login(@RequestBody User loginData, HttpSession session) {
+        User loggedUser = userService.loginUser(loginData.getUsername(), loginData.getPassword());
+
+        if (loggedUser != null) {
+            // Giriş başarılıysa, kullanıcı bilgileri sessiona kaydedilir girilen kişinin bilgilerini tutmak için
+            session.setAttribute("loggedUser", loggedUser);
+            // Frontende başarılı yanıtı gönderir
+            return ResponseEntity.ok().body("Login successful");
+        } else {
+            // Giriş başarısızsa hata mesajı gönderilir.
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
+        }
+    }
     @GetMapping("/logout")
     public String handleLogout(HttpSession session) {
-        // Sessiondaki kullanıcıyı siliyorum ne olur ne olmaz karışıklık çıkmasın diye
+        // Mevcut oturumu geçersiz kılarak kullanıcıyı sistemden çıkarır.
         session.invalidate();
         return "redirect:/login";
     }

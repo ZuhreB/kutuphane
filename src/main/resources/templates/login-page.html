@@ -111,11 +111,10 @@
 
 <div class="login-container">
     <h2>Log in to your account </h2>
-    <div th:if="${loginError}" style="padding: 1rem; margin-bottom: 1 rem; border-radius: 6px; background-color: #fdeeee; color: #d93025; text-align: senter; font-weight: 500;">
-        <p th:text="${loginError}"></p>
-    </div>
 
-    <form th:action="@{/login}" method="post">
+    <div id="error-message" style="padding: 1rem; margin-bottom: 1rem; border-radius: 6px; background-color: #fdeeee; color: #d93025; text-align: center; font-weight: 500; display: none;"></div>
+
+    <form id="login-form">
         <div class="form-group">
             <label for="username">User Name</label>
             <input type="text" id="username" name="username" placeholder="Kullanıcı adınızı girin" required>
@@ -138,6 +137,58 @@
         </div>
     </form>
 </div>
+
+<script>
+    const loginForm = document.getElementById('login-form');
+    const errorMessageDiv = document.getElementById('error-message');
+    const submitButton = loginForm.querySelector('.login-btn');
+
+    loginForm.addEventListener('submit', async (event) => {
+        // Formun varsayılan sayfa yenileme davranışını engelle
+        event.preventDefault();
+
+        // Önceki hataları temizle ve butonu devre dışı bırak
+        errorMessageDiv.style.display = 'none';
+        errorMessageDiv.textContent = '';
+        submitButton.disabled = true;
+        submitButton.textContent = 'Logging in...';
+
+        // Form verilerini al
+        const formData = new FormData(loginForm);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            // API'ye POST isteği gönder (artık /login adresine)
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            // Yanıt başarılıysa ana sayfaya yönlendir
+            if (response.ok) {
+                window.location.href = '/main';
+            } else {
+                // Başarısızsa, sunucudan gelen hata mesajını göster
+                const errorText = await response.text();
+                errorMessageDiv.textContent = errorText || 'An unknown error occurred.';
+                errorMessageDiv.style.display = 'block';
+            }
+
+        } catch (error) {
+            // Ağ hatası gibi bir sorun olursa
+            console.error('Login fetch error:', error);
+            errorMessageDiv.textContent = 'Could not connect to the server. Please try again later.';
+            errorMessageDiv.style.display = 'block';
+        } finally {
+            // Hata durumunda butonu tekrar aktif et
+            submitButton.disabled = false;
+            submitButton.textContent = 'Log in';
+        }
+    });
+</script>
 
 </body>
 </html>
