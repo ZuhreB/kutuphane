@@ -1,6 +1,7 @@
 package com.kutuphane.Service;
 
 import com.kutuphane.Entity.Book;
+import com.kutuphane.Entity.User;
 import com.kutuphane.Repository.BookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,9 @@ public class BookService {
         this.bookRepository = bookRepository;
     }
 
+    public Optional<Book> getBookById(Long id) {
+        return bookRepository.findById(id);
+    }
     public List<Book> searchByTitle(String title) {
         if (title == null || title.isBlank()) {
             return Collections.emptyList();

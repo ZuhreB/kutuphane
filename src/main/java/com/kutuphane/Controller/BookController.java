@@ -11,13 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * Bu Controller, kitap arama işlemleri için JSON verisi sağlayan bir REST API'dır.
- * @RestController, bu sınıftaki tüm metotların doğrudan HTTP yanıt gövdesine
- * veri (genellikle JSON) yazacağını belirtir.
- */
 @RestController
-@RequestMapping("/api/books") // Bu API'daki tüm yollar /api/books ile başlar.
+@RequestMapping("/api/books")
 public class BookController {
 
     private final BookService bookService;
@@ -36,8 +31,9 @@ public class BookController {
             case "title" -> bookService.searchByTitle(query);
             case "author" -> bookService.searchByAuthor(query);
             case "isbn" -> bookService.searchByISBN(query);
-            default -> List.of(); // Boş liste
+            case "topic"-> bookService.searchByTopic(query);
+            default -> List.of();
         };
-        return ResponseEntity.ok(results); // Sonuçları 200 OK status kodu ile döndür.
+        return ResponseEntity.ok(results);
     }
 }

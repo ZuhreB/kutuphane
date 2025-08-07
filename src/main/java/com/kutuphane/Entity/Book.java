@@ -21,11 +21,11 @@ public class Book {
     @Column(name = "Title", nullable = false, length = 255)
     private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY) //bir yazar birden fazla kitaba sahip olabilir
+    @ManyToOne(fetch = FetchType.EAGER) //bir yazar birden fazla kitaba sahip olabilir
     @JoinColumn(name = "AuthorID", nullable = false)
     private com.kutuphane.Entity.Author author;
 
-    @ManyToOne(fetch = FetchType.LAZY)// bir yayıncı birden fazla kitap yayınlamış olabileceği için
+    @ManyToOne(fetch = FetchType.EAGER)// bir yayıncı birden fazla kitap yayınlamış olabileceği için
     @JoinColumn(name = "PublisherID", nullable = false)
     private com.kutuphane.Entity.Publisher publisher;
 

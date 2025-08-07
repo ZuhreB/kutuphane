@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Library Home</title>
+  <title>MyLibrary Home</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; margin: 0; }
-    .navbar { background-color: #ffffff; padding: 1rem 2rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; margin: 0; transition: background-color 0.4s; }
+    .navbar { background-color: #ffffff; padding: 1rem 2rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 99; }
     .navbar .logo { font-size: 1.5rem; font-weight: bold; color: #1877f2; }
     .navbar .user-info a { color: #d93025; text-decoration: none; font-weight: 600; }
     .container { max-width: 900px; margin: 2rem auto; background-color: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -21,54 +21,153 @@
     .results-table th, .results-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
     .results-table th { background-color: #f2f2f2; font-weight: 600; }
     .results-table tbody tr:nth-child(odd) { background-color: #f9f9f9; }
+    .results-table tbody tr { cursor: pointer; transition: background-color 0.2s; }
+    .results-table tbody tr:hover { background-color: #e9e9e9; }
     .no-results { color: #606770; background-color: #f0f2f5; padding: 1rem; border-radius: 6px; text-align: center; }
+    .available { color:white ; background-color: green; font-weight: bold; }
+    .unavailable { color: black; background-color: red; font-weight: bold; }
+
+    /* --- yan menü --- */
+    .yanmenü-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+      margin-right: 1rem;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+    }
+    .yanmenü-btn:hover {
+      background-color: #f0f0f0;
+    }
+    .yanmenü-icon {
+      font-size: 28px;
+      color: #1c1e21;
+    }
+    .sidenav {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      z-index: 100;
+      top: 0;
+      left: 0;
+      background-color: #1c1e21;
+      overflow-x: hidden;
+      transition: 0.4s cubic-bezier(0.1, 0.7, 0.6, 1); /* Smoother animation */
+      padding-top: 60px;
+    }
+    .sidenav a {
+      padding: 10px 15px 10px 32px;
+      text-decoration: none;
+      font-size: 22px;
+      color: #a0a0a0;
+      display: block;
+      transition: 0.3s;
+    }
+    .sidenav a:hover {
+      color: #ffffff;
+    }
+    .sidenav .closebtn {
+      position: absolute;
+      top: 10px;
+      right: 25px;
+      font-size: 36px;
+      color: #a0a0a0;
+    }
+    .overlay {
+        display: none;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 99;
+        transition: opacity 0.4s;
+        opacity: 0;
+    }
   </style>
 </head>
 <body>
 
+<!-- The Sidenav -->
+<div id="mySidenav" class="sidenav">
+  <a href="javascript:void(0)" class="closebtn" onclick="toggleNav()">&times;</a>
+  <a href="#">Messages</a>
+  <a href="#">My Borrows</a>
+  <a href="#">My FineAmounts</a>
+  <a href="#">Setting</a>
+</div>
+
+<!-- Overlay for closing the menu -->
+<div id="overlay" class="overlay" onclick="toggleNav()"></div>
+
 <div class="navbar">
-  <div class="logo">MyLibrary</div>
+  <div style="display: flex; align-items: center;">
+    <button class="yanmenü-btn" onclick="toggleNav()" aria-label="Open navigation menu">
+      <span class="yanmenü-icon">&#9776;</span>
+    </button>
+    <div class="logo">MyLibrary</div>
+  </div>
   <div class="user-info">
     <a th:href="@{/logout}">Log Out</a>
   </div>
 </div>
 
 <div class="container">
-  <h1>Welcome, <span th:text="${userName}">User</span>!</h1>
-  <p>You can start searching for books or manage your account.</p>
+  <h1>Welcome, <span th:text="${userName ?: 'User'}">User</span>!</h1>
+  <p>You can start searching for books.</p>
 
   <hr style="margin: 2rem 0;">
 
   <h2>Book Search</h2>
 
-  <!-- Formun action ve method'u artık JS tarafından yönetilecek -->
   <form id="search-form" class="search-form">
     <select id="search-type" name="type">
       <option value="title">Title</option>
       <option value="author">Author</option>
       <option value="isbn">ISBN</option>
+      <option value="topic">Topic</option>
     </select>
     <input type="text" id="search-query" name="query" placeholder="Search for books..." required>
     <button type="submit" id="search-button">Search</button>
   </form>
 
-  <!-- Bu div'in içeriği JavaScript tarafından dinamik olarak doldurulacak -->
   <div id="search-results-container"></div>
 </div>
 
 <script>
-  // Gerekli HTML elementlerini seçiyoruz
+  /* --- Sidenav Toggle Function --- */
+  const sidenav = document.getElementById("mySidenav");
+  const overlay = document.getElementById("overlay");
+
+  function toggleNav() {
+    const isOpen = sidenav.style.width === "250px";
+    if (isOpen) {
+      sidenav.style.width = "0";
+      overlay.style.display = "none";
+      overlay.style.opacity = 0;
+    } else {
+      sidenav.style.width = "250px";
+      overlay.style.display = "block";
+      // A tiny delay to allow the display property to apply before starting the transition
+      setTimeout(() => {
+        overlay.style.opacity = 1;
+      }, 10);
+    }
+  }
+
+  /* --- AJAX Search Logic --- */
   const searchForm = document.getElementById('search-form');
   const searchTypeSelect = document.getElementById('search-type');
   const searchQueryInput = document.getElementById('search-query');
   const searchButton = document.getElementById('search-button');
   const resultsContainer = document.getElementById('search-results-container');
 
-  // Form gönderildiğinde çalışacak fonksiyon
   searchForm.addEventListener('submit', async (event) => {
-      // Formun sayfayı yenilemesini engelle
       event.preventDefault();
-
       const query = searchQueryInput.value.trim();
       const type = searchTypeSelect.value;
 
@@ -77,47 +176,45 @@
           return;
       }
 
-      // Arama sırasında kullanıcıya geri bildirim ver
       searchButton.disabled = true;
       searchButton.textContent = 'Searching...';
       resultsContainer.innerHTML = `<div class="no-results">Loading...</div>`;
 
       try {
-          // API'a GET isteği gönder
           const response = await fetch(`/api/books/search?type=${type}&query=${query}`);
-
           if (!response.ok) {
-              throw new Error('Network response was not ok.');
+              const errorText = await response.text();
+              throw new Error(`Server Error: ${response.status}. ${errorText}`);
           }
-
           const books = await response.json();
-          renderResults(books); // Sonuçları ekrana çiz
-
+          renderResults(books);
       } catch (error) {
           console.error('Fetch error:', error);
-          resultsContainer.innerHTML = `<div class="no-results" style="background-color: #fdeeee; color: #d93025;">An error occurred while searching. Please try again.</div>`;
+          resultsContainer.innerHTML = `<div class="no-results" style="background-color: #fdeeee; color: #d93025;">An error occurred. Check the console for details.</div>`;
       } finally {
-          // Arama bitince butonu tekrar aktif et
           searchButton.disabled = false;
           searchButton.textContent = 'Search';
       }
   });
 
-  // Gelen kitap verisini alıp HTML tablosu oluşturan fonksiyon
   function renderResults(books) {
       if (!books || books.length === 0) {
-          resultsContainer.innerHTML = `<div class="no-results">No books found for your query. Please try a different search term.</div>`;
+          resultsContainer.innerHTML = `<div class="no-results">No books found for your query.</div>`;
           return;
       }
 
-      const tableRows = books.map(book => `
-          <tr>
-              <td>${book.title || 'N/A'}</td>
-              <td>${book.author ? (book.author.firstName + ' ' + book.author.lastName) : 'N/A'}</td>
-              <td>${book.isbn || 'N/A'}</td>
-              <td>${book.availableCopies}</td>
-          </tr>
-      `).join('');
+      const tableRows = books.map(book => {
+          const availableClass = book.availableCopies > 0 ? 'available' : 'unavailable';
+          const borrowUrl = `/borrow?bookId=${book.bookid}`;
+          return `
+              <tr onclick="window.location.href='${borrowUrl}'">
+                  <td>${book.title || 'N/A'}</td>
+                  <td>${book.authorName || 'N/A'}</td>
+                  <td>${book.isbn || 'N/A'}</td>
+                  <td class="${availableClass}">${book.availableCopies}</td>
+              </tr>
+          `;
+      }).join('');
 
       resultsContainer.innerHTML = `
           <table class="results-table">
@@ -136,6 +233,5 @@
       `;
   }
 </script>
-
 </body>
 </html>
