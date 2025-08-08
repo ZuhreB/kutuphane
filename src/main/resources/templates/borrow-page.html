@@ -1,49 +1,278 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Borrow Book</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrow Book | MyLibrary</title>
     <style>
-        .success { color: green; }
-        .error { color: red; }
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          background-color: #f0f2f5;
+          margin: 0;
+          transition: background-color 0.4s;
+        }
+        .navbar {
+          background-color: #ffffff;
+          padding: 1rem 2rem;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          position: sticky;
+          top: 0;
+          z-index: 99;
+        }
+        .navbar .logo {
+          font-size: 1.5rem;
+          font-weight: bold;
+          color: #1877f2;
+        }
+        .navbar .user-info a {
+          color: #d93025;
+          text-decoration: none;
+          font-weight: 600;
+        }
+        .container {
+          max-width: 900px;
+          margin: 2rem auto;
+          background-color: #fff;
+          padding: 2rem;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+          color: #1c1e21;
+          margin-top: 0;
+        }
+        .book-info {
+          background-color: #f9f9f9;
+          padding: 1.5rem;
+          border-radius: 8px;
+          margin-bottom: 2rem;
+        }
+        .book-info p {
+          margin: 0.5rem 0;
+          font-size: 1.1rem;
+        }
+        .borrow-form {
+          margin-top: 2rem;
+        }
+        .form-group {
+          margin-bottom: 1.5rem;
+        }
+        .form-group label {
+          display: block;
+          margin-bottom: 0.5rem;
+          font-weight: 600;
+          color: #1c1e21;
+        }
+        .form-group .date-display {
+          font-size: 1.1rem;
+          padding: 0.5rem;
+          background-color: #f5f6f7;
+          border-radius: 6px;
+          display: inline-block;
+          min-width: 200px;
+        }
+        .btn {
+          background-color: #1877f2;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 6px;
+          font-size: 1rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background-color 0.2s;
+        }
+        .btn:hover {
+          background-color: #166fe5;
+        }
+        .btn-secondary {
+          background-color: #e4e6eb;
+          color: #1c1e21;
+          margin-left: 1rem;
+        }
+        .btn-secondary:hover {
+          background-color: #d8dadf;
+        }
+        .alert {
+          padding: 1rem;
+          border-radius: 6px;
+          margin-bottom: 1.5rem;
+        }
+        .alert-success {
+          background-color: #e6f4ea;
+          color: #1e7e34;
+        }
+        .alert-error {
+          background-color: #fdeeee;
+          color: #d93025;
+        }
+        .action-buttons {
+          margin-top: 2rem;
+        }
+        #loading {
+          display: none;
+          margin-top: 1rem;
+        }
     </style>
 </head>
 <body>
-<div th:if="${book}">
-    <h1>Borrow Book: <span th:text="${book.title}"></span></h1>
-    <p>Author: <span th:text="${book.author.firstName + ' ' + book.author.lastName}"></span></p>
-    <p>ISBN: <span th:text="${book.isbn}"></span></p>
-    <p>Available Copies: <span th:text="${book.availableCopies}"></span></p>
 
-    <div th:if="${param.success}" class="success">
-        Book borrowed successfully! Please return by
-        <span th:text="${#temporals.format(currentDate.plusDays(14), 'dd-MM-yyyy')}"></span>
-    </div>
-    <div th:if="${param.success != null and !param.success}" class="error">
-        Could not borrow the book. Please try again.
-    </div>
-
-    <form th:action="@{/borrow}" method="post">
-        <input type="hidden" name="bookId" th:value="${book.bookID}">
-        <div>
-            <label>Borrow Date:
-                <span th:text="${#temporals.format(currentDate, 'dd-MM-yyyy HH:mm')}"></span>
-            </label>
-        </div>
-        <div>
-            <label>Expected Return Date:
-                <span th:text="${#temporals.format(currentDate.plusDays(14), 'dd-MM-yyyy')}"></span>
-            </label>
-        </div>
-        <button type="submit">Confirm Borrow</button>
-    </form>
-    <a th:href="@{/books}">Back to Books</a>
+<!-- The Sidenav -->
+<div id="mySidenav" class="sidenav">
+    <a href="javascript:void(0)" class="closebtn" onclick="toggleNav()">&times;</a>
+    <a href="#">Messages</a>
+    <a href="#">My Borrows</a>
+    <a href="#">My FineAmounts</a>
+    <a href="#">Setting</a>
 </div>
 
-<div th:unless="${book}">
-    <h1>Book Not Found</h1>
-    <p>The requested book could not be found.</p>
-    <a th:href="@{/books}">Back to Books</a>
+<!-- Overlay for closing the menu -->
+<div id="overlay" class="overlay" onclick="toggleNav()"></div>
+
+<div class="navbar">
+    <div style="display: flex; align-items: center;">
+        <button class="yanmenü-btn" onclick="toggleNav()" aria-label="Open navigation menu">
+            <span class="yanmenü-icon">&#9776;</span>
+        </button>
+        <div class="logo">MyLibrary</div>
+    </div>
+    <div class="user-info">
+        <a th:href="@{/logout}">Log Out</a>
+    </div>
 </div>
+
+<div class="container">
+    <div th:if="${book}">
+        <h1>Borrow Book</h1>
+
+        <div id="message-container"></div>
+
+        <div class="book-info">
+            <h2 th:text="${book.title}"></h2>
+            <p><strong>Author:</strong> <span th:text="${book.author.firstName + ' ' + book.author.lastName}"></span></p>
+            <p><strong>ISBN:</strong> <span th:text="${book.isbn}"></span></p>
+            <p><strong>Available Copies:</strong> <span id="available-copies" th:text="${book.availableCopies}"></span></p>
+        </div>
+
+        <form id="borrow-form" class="borrow-form">
+            <input type="hidden" id="book-id" name="bookId" th:value="${book.bookID}">
+
+            <div class="form-group">
+                <label>Borrow Date</label>
+                <div class="date-display" id="borrow-date" th:text="${#temporals.format(currentDate, 'dd-MM-yyyy HH:mm')}"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Expected Return Date</label>
+                <div class="date-display" id="return-date" th:text="${#temporals.format(currentDate.plusDays(14), 'dd-MM-yyyy')}"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn" id="submit-btn">Confirm Borrow</button>
+                <a th:href="@{/books}" class="btn btn-secondary">Back to Books</a>
+            </div>
+        </form>
+
+        <div id="loading">
+            Processing your request...
+        </div>
+    </div>
+
+    <div th:unless="${book}">
+        <h1>Book Not Found</h1>
+        <div class="alert alert-error">
+            The requested book could not be found.
+        </div>
+        <a th:href="@{/books}" class="btn btn-secondary">Back to Books</a>
+    </div>
+</div>
+
+<script>
+    /* --- Sidenav Toggle Function --- */
+    const sidenav = document.getElementById("mySidenav");
+    const overlay = document.getElementById("overlay");
+
+    function toggleNav() {
+      const isOpen = sidenav.style.width === "250px";
+      if (isOpen) {
+        sidenav.style.width = "0";
+        overlay.style.display = "none";
+        overlay.style.opacity = 0;
+      } else {
+        sidenav.style.width = "250px";
+        overlay.style.display = "block";
+        setTimeout(() => {
+          overlay.style.opacity = 1;
+        }, 10);
+      }
+    }
+
+    // AJAX Form Submission
+   document.getElementById('borrow-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('submit-btn');
+    const loading = document.getElementById('loading');
+    const messageContainer = document.getElementById('message-container');
+
+    // Clear previous messages
+    messageContainer.innerHTML = '';
+
+    // Show loading state
+    submitBtn.disabled = true;
+    loading.style.display = 'block';
+
+    try {
+        const bookId = document.getElementById('book-id').value;
+        const response = await fetch('/api/borrow', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `bookId=${bookId}`
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Success case
+            messageContainer.innerHTML = `
+                <div class="alert alert-success">
+                    ${result.message} Teslim tarihi:
+                    <strong>${document.getElementById('return-date').textContent}</strong>
+                </div>
+            `;
+
+            // Update available copies
+            const availableCopies = document.getElementById('available-copies');
+            availableCopies.textContent = parseInt(availableCopies.textContent) - 1;
+
+            // Disable the submit button after successful borrow
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Ödünç Alındı';
+        } else {
+            // Error case
+            messageContainer.innerHTML = `
+                <div class="alert alert-error">
+                    ${result.message}
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Hata:', error);
+        messageContainer.innerHTML = `
+            <div class="alert alert-error">
+                Bir hata oluştu. Lütfen tekrar deneyin.
+            </div>
+        `;
+    } finally {
+        loading.style.display = 'none';
+        submitBtn.disabled = false;
+    }
+});
+</script>
 </body>
 </html>

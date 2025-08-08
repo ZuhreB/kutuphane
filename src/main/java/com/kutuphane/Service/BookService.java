@@ -59,33 +59,29 @@ public class BookService {
     }
 
 
-
     @Transactional
     public void borrowBook(Long bookId, String username) {
-        // 1. Kitabı ve kullanıcıyı veritabanından bul.
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new IllegalStateException("Book not found with id: " + bookId));
+                .orElseThrow(() -> new IllegalStateException("Kitap bulunamadı!"));
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalStateException("User not found with username: " + username));
-
-        // 2. Kitabın mevcut olup olmadığını kontrol et.
         if (book.getAvailableCopies() <= 0) {
-            throw new IllegalStateException("This book is currently unavailable.");
+            throw new IllegalStateException("Bu kitap şu anda mevcut değil!");
         }
 
-        // 3. Kitabın mevcut kopya sayısını bir azalt.
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("Kullanıcı bulunamadı!"));
+
+        // Update book availability
         book.setAvailableCopies(book.getAvailableCopies() - 1);
         bookRepository.save(book);
 
-        // 4. Yeni bir ödünç alma kaydı oluştur.
-        Borrow newBorrow = new Borrow();
-        newBorrow.setBook(book);
-        newBorrow.setUser(user);
-        newBorrow.setBorrowDate(LocalDateTime.now());
-        newBorrow.setReturnDate(LocalDateTime.now().plusDays(14)); // 14 gün sonrası için teslim tarihi
-        newBorrow.setStatus("BORROWED");
-
-        borrowRepository.save(newBorrow);
+        // Create borrow record
+        Borrow borrow = new Borrow();
+        borrow.setBook(book);
+        borrow.setUser(user);
+        borrow.setBorrowDate(LocalDateTime.now());
+        borrow.setReturnDate(LocalDateTime.now().plusDays(14));
+        borrow.setStatus("BORROWED");
+        borrowRepository.save(borrow);
     }
 }
