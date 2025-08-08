@@ -159,8 +159,7 @@
     }
   }
 
-  /* --- AJAX Search Logic --- */
-  const searchForm = document.getElementById('search-form');
+   const searchForm = document.getElementById('search-form');
   const searchTypeSelect = document.getElementById('search-type');
   const searchQueryInput = document.getElementById('search-query');
   const searchButton = document.getElementById('search-button');
@@ -196,7 +195,6 @@
           searchButton.textContent = 'Search';
       }
   });
-
   function renderResults(books) {
       if (!books || books.length === 0) {
           resultsContainer.innerHTML = `<div class="no-results">No books found for your query.</div>`;
@@ -204,17 +202,19 @@
       }
 
       const tableRows = books.map(book => {
-          const availableClass = book.availableCopies > 0 ? 'available' : 'unavailable';
-          const borrowUrl = `/borrow?bookId=${book.bookid}`;
-          return `
-              <tr onclick="window.location.href='${borrowUrl}'">
-                  <td>${book.title || 'N/A'}</td>
-                  <td>${book.authorName || 'N/A'}</td>
-                  <td>${book.isbn || 'N/A'}</td>
-                  <td class="${availableClass}">${book.availableCopies}</td>
-              </tr>
-          `;
-      }).join('');
+        const availableClass = book.availableCopies > 0 ? 'available' : 'unavailable';
+        return `
+        <tr data-available="${book.availableCopies}"
+            data-title="${book.title || 'N/A'}"
+            data-id="${book.bookID}"> <!-- Kitap ID'sini burada ekliyoruz -->
+            <td>${book.title || 'N/A'}</td>
+            <td>${book.author ? (book.author.firstName + ' ' + book.author.lastName) : 'N/A'}</td>
+            <td>${book.isbn || 'N/A'}</td>
+            <td>${book.topic || 'N/A'}</td>
+            <td class="${availableClass}">${book.availableCopies}</td>
+        </tr>
+        `;
+    }).join('');
 
       resultsContainer.innerHTML = `
           <table class="results-table">
@@ -223,6 +223,7 @@
                       <th>Title</th>
                       <th>Author</th>
                       <th>ISBN</th>
+                      <th>Topic</th>
                       <th>Available</th>
                   </tr>
               </thead>
@@ -231,6 +232,23 @@
               </tbody>
           </table>
       `;
+
+      // Satırlara tıklama eventi ekledim
+      const rows = document.querySelectorAll('.results-table tbody tr');
+      rows.forEach(row => {
+          row.addEventListener('click', function() {
+          const available = parseInt(this.getAttribute('data-available'));
+          const title = this.getAttribute('data-title');
+          const bookId = this.getAttribute('data-id');
+
+          if (available <= 0) {
+              alert(`"${title}" kitabı şu anda mevcut değil. Lütfen daha sonra tekrar kontrol edin.`);
+          } else {
+              // Controller'ınızda tanımladığınız /borrow endpointine yönlendiriyoruz
+              window.location.href = `/borrow?bookId=${bookId}`;
+          }
+      });
+      });
   }
 </script>
 </body>

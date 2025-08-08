@@ -20,12 +20,12 @@ public class Borrow {
     private Long borrowID;
 
     // bir kullanıcı birden fazla kitap alabildiği için
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "UserID", nullable = false)
     private User user;
 
     // bir kitap birden fazla kez alına bileceği için çünkü tek kopyası olmak zorunda değil
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "BookID", nullable = false)
     private Book book;
 

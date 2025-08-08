@@ -1,160 +1,49 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Borrow Book</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; margin: 0; }
-        .navbar { background-color: #ffffff; padding: 1rem 2rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; }
-        .navbar .logo { font-size: 1.5rem; font-weight: bold; color: #1877f2; text-decoration: none; }
-        .navbar .user-info a { color: #d93025; text-decoration: none; font-weight: 600; }
-        .container { max-width: 700px; margin: 2rem auto; background-color: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-        h1 { color: #1c1e21; border-bottom: 1px solid #ddd; padding-bottom: 1rem; margin-bottom: 1.5rem; }
-
-        .book-details { display: grid; grid-template-columns: 150px 1fr; gap: 1rem 2rem; }
-        .book-details dt { font-weight: 600; color: #606770; text-align: right; }
-        .book-details dd { margin: 0; font-size: 1.1rem; }
-
-        .borrow-form { margin-top: 2rem; }
-        .borrow-btn { width: 100%; padding: 0.75rem; border: none; border-radius: 6px; background-color: #42b72a; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
-        .borrow-btn:hover { background-color: #36a420; }
-        .borrow-btn:disabled { background-color: #94d3a2; color: #e0e0e0; cursor: not-allowed; }
-
-        #borrow-status-message {
-            padding: 1rem;
-            margin-top: 1.5rem;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: 500;
-            display: none; /* Başlangıçta gizli */
-        }
-        #borrow-status-message.success { background-color: #e9f7ef; color: #1e8755; }
-        #borrow-status-message.error { background-color: #fdeeee; color: #d93025; }
-
-        .unavailable-msg { color: #d93025; background-color: #fdeeee; padding: 1rem; border-radius: 6px; text-align: center; font-weight: 500; }
+        .success { color: green; }
+        .error { color: red; }
     </style>
 </head>
 <body>
+<div th:if="${book}">
+    <h1>Borrow Book: <span th:text="${book.title}"></span></h1>
+    <p>Author: <span th:text="${book.author.firstName + ' ' + book.author.lastName}"></span></p>
+    <p>ISBN: <span th:text="${book.isbn}"></span></p>
+    <p>Available Copies: <span th:text="${book.availableCopies}"></span></p>
 
-<div class="navbar">
-    <!-- Ana sayfaya geri dönmek için bir link -->
-    <a th:href="@{/main}" class="logo">MyLibrary</a>
-    <div class="user-info">
-        <a th:href="@{/logout}">Log Out</a>
+    <div th:if="${param.success}" class="success">
+        Book borrowed successfully! Please return by
+        <span th:text="${#temporals.format(currentDate.plusDays(14), 'dd-MM-yyyy')}"></span>
     </div>
-</div>
+    <div th:if="${param.success != null and !param.success}" class="error">
+        Could not borrow the book. Please try again.
+    </div>
 
-<!-- Kitap bulunduysa bu bölüm gösterilir -->
-<div class="container" th:if="${book != null}">
-    <h1>Borrow Confirmation</h1>
-    <p>Please confirm the details of the book you wish to borrow.</p>
-
-    <dl class="book-details">
-        <dt>Title:</dt>
-        <dd th:text="${book.title}">The Great Gatsby</dd>
-
-        <dt>Author:</dt>
-        <dd th:text="${book.authorName}">F. Scott Fitzgerald</dd>
-
-        <dt>ISBN:</dt>
-        <dd th:text="${book.isbn}">978-0743273565</dd>
-
-        <dt>Available Copies:</dt>
-        <dd th:text="${book.availableCopies}">5</dd>
-    </dl>
-
-    <!-- AJAX ile gönderilecek form -->
-    <form id="borrow-form" class="borrow-form">
-        <!-- Form gönderildiğinde bookId'yi de göndermek için gizli input -->
-        <input type="hidden" name="bookId" th:value="${book.bookid}" />
-
-        <!-- Eğer mevcut kopya yoksa mesaj göster ve butonu devre dışı bırak -->
-        <div th:if="${book.availableCopies <= 0}" class="unavailable-msg">
-            This book is currently unavailable.
+    <form th:action="@{/borrow}" method="post">
+        <input type="hidden" name="bookId" th:value="${book.bookID}">
+        <div>
+            <label>Borrow Date:
+                <span th:text="${#temporals.format(currentDate, 'dd-MM-yyyy HH:mm')}"></span>
+            </label>
         </div>
-        <button type="submit" id="confirm-borrow-btn" class="borrow-btn" th:disabled="${book.availableCopies <= 0}">
-            Confirm Borrow
-        </button>
+        <div>
+            <label>Expected Return Date:
+                <span th:text="${#temporals.format(currentDate.plusDays(14), 'dd-MM-yyyy')}"></span>
+            </label>
+        </div>
+        <button type="submit">Confirm Borrow</button>
     </form>
-
-    <!-- AJAX yanıtlarının gösterileceği alan -->
-    <div id="borrow-status-message"></div>
+    <a th:href="@{/books}">Back to Books</a>
 </div>
 
-<!-- Kitap bulunamazsa bu bölüm gösterilir -->
-<div class="container" th:if="${book == null}">
+<div th:unless="${book}">
     <h1>Book Not Found</h1>
-    <p>The book you are looking for could not be found. Please <a th:href="@{/main}">return to the main page</a> and try again.</p>
+    <p>The requested book could not be found.</p>
+    <a th:href="@{/books}">Back to Books</a>
 </div>
-
-<script>
-    const borrowForm = document.getElementById('borrow-form');
-    const confirmButton = document.getElementById('confirm-borrow-btn');
-    const statusMessage = document.getElementById('borrow-status-message');
-
-    // Eğer form sayfada varsa (yani kitap bulunmuşsa) event listener'ı ekliyoruz.
-    if (borrowForm) {
-        // 2. Form gönderildiğinde çalışacak fonksiyonu tanımlıyoruz.
-        borrowForm.addEventListener('submit', async (event) => {
-            // 3. Formun sayfayı yenilemesini engelliyoruz.
-            event.preventDefault();
-
-            // 4. Butonu devre dışı bırakıp kullanıcıya işlem yapıldığını bildiriyoruz.
-            confirmButton.disabled = true;
-            confirmButton.textContent = 'Processing...';
-            displayMessage('Your request is being processed...', 'info'); // 'info' class'ı ekleyebiliriz
-
-            // 5. Formdaki gizli input'tan bookId'yi alıyoruz.
-            const formData = new FormData(borrowForm);
-            const bookId = formData.get('bookId');
-
-            // Backend'e göndereceğimiz JSON verisini hazırlıyoruz.
-            const dataToSend = { bookId: bookId };
-
-            try {
-                // 6. fetch() ile backend'e POST isteği gönderiyoruz.
-                const response = await fetch('/api/borrows', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(dataToSend)
-                });
-
-                // 7. Gelen yanıta göre mesajı güncelliyoruz.
-                if (response.ok) {
-                    // Başarılıysa:
-                    const successMessage = await response.text();
-                    displayMessage(successMessage || 'Book borrowed successfully!', 'success');
-                    confirmButton.textContent = 'Borrowed!';
-                    // Buton kalıcı olarak devre dışı kalır veya gizlenir.
-                    // confirmButton.style.display = 'none'; 
-                } else {
-                    // Başarısızsa:
-                    const errorMessage = await response.text();
-                    displayMessage(errorMessage || 'An unknown error occurred.', 'error');
-                    confirmButton.disabled = false; // Kullanıcının tekrar denemesi için butonu aktif et.
-                    confirmButton.textContent = 'Confirm Borrow';
-                }
-            } catch (error) {
-                // Ağ hatası gibi bir sorun olursa:
-                console.error('Fetch Error:', error);
-                displayMessage('Could not connect to the server. Please try again later.', 'error');
-                confirmButton.disabled = false; // Butonu tekrar aktif et.
-                confirmButton.textContent = 'Confirm Borrow';
-            }
-        });
-    }
-
-    // Mesajları göstermek için yardımcı bir fonksiyon.
-    function displayMessage(message, type) {
-        statusMessage.textContent = message;
-        statusMessage.className = ''; // Önceki class'ları temizle
-        statusMessage.classList.add(type); // 'success' veya 'error' class'ını ekle
-        statusMessage.style.display = 'block'; // Mesaj kutusunu görünür yap
-    }
-</script>
-
 </body>
 </html>

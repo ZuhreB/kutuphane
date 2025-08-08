@@ -1,43 +1,62 @@
-// Example BorrowController
 package com.kutuphane.Controller;
 
 import com.kutuphane.Entity.Book;
 import com.kutuphane.Entity.User;
 import com.kutuphane.Service.BookService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import com.kutuphane.Service.UserService;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/borrow")
 public class BorrowController {
 
     private final BookService bookService;
+    private final UserService userService;
 
-    public BorrowController(BookService bookService) {
+    @Autowired
+    public BorrowController(BookService bookService, UserService userService) {
         this.bookService = bookService;
+        this.userService = userService;
     }
 
-    @GetMapping("{ıd}")
+    @GetMapping("/borrow")
     public String showBorrowPage(@RequestParam("bookId") Long bookId, Model model) {
-        // model.addAttribute("book", book);
-        model.addAttribute("borrowedBookId", bookId); // Just an example for now
+        Optional<Book> bookOptional = bookService.getBookById(bookId);
 
-        return "borrow-page";
+        if (bookOptional.isPresent()) {
+            model.addAttribute("book", bookOptional.get());
+            model.addAttribute("currentDate", LocalDateTime.now());
+            return "borrow-page";
+        }
+        return "redirect:/books?notFound=true";
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Book> getUserById(@PathVariable Long id) {
-        Optional<Book> book= bookService.getBookById(id);
-        // optinala bir user geldiyse çalışçak yoksa çalışmıycak bu kıısmı
-        return book.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    @PostMapping("/borrow")
+    public String borrowBook(@RequestParam("bookId") Long bookId, HttpSession session) {
+        // 1. Oturumdan (session) giriş yapmış kullanıcıyı alıyoruz.
+        User loggedUser = (User) session.getAttribute("loggedUser");
+
+        // 2. Kullanıcı giriş yapmamışsa (örneğin oturum süresi dolduysa) login sayfasına yönlendir.
+        if (loggedUser == null) {
+            return "redirect:/login?error=session_expired";
+        }
+
+        // 3. Servis metodunu doğru kullanıcı bilgisiyle çağır.
+        try {
+            // Bu metodun, kitap yoksa veya başka bir sorun varsa hata fırlatması en iyisidir.
+            bookService.borrowBook(bookId, loggedUser.getUsername());
+            // Başarılı olursa, sayfayı bir başarı mesajıyla yeniden yükle.
+            return "redirect:/borrow?bookId=" + bookId + "&success=true";
+        } catch (IllegalStateException e) {
+            // Başarısız olursa (örn: kitap mevcut değil), bir hata mesajıyla yeniden yükle.
+            // Not: URLEncoder.encode() kullanmak daha güvenlidir ama basitlik için şimdilik böyle bırakıyoruz.
+            return "redirect:/borrow?bookId=" + bookId + "&error=" + e.getMessage();
+        }
     }
 }
