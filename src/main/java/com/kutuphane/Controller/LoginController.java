@@ -25,19 +25,20 @@ public class LoginController {
 
     @PostMapping("/login")
     @ResponseBody
-    public ResponseEntity<?> Login(@RequestBody User loginData, HttpSession session) {
+    public ResponseEntity<String> Login(@RequestBody User loginData, HttpSession session) {
         User loggedUser = userService.loginUser(loginData.getUsername(), loginData.getPassword());
 
         if (loggedUser != null) {
-            // Giriş başarılıysa, kullanıcı bilgileri sessiona kaydedilir girilen kişinin bilgilerini tutmak için
             session.setAttribute("loggedUser", loggedUser);
-            // Frontende başarılı yanıtı gönderir
-            return ResponseEntity.ok().body("Login successful");
+            if ("ADMIN".equals(loggedUser.getRole())) {
+                return ResponseEntity.ok("/admin-page");
+            }
+            return ResponseEntity.ok("/main");
         } else {
-            // Giriş başarısızsa hata mesajı gönderilir.
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
         }
     }
+
     @GetMapping("/logout")
     public String handleLogout(HttpSession session) {
         // Mevcut oturumu geçersiz kılarak kullanıcıyı sistemden çıkarır.

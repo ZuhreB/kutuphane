@@ -168,9 +168,12 @@
             });
 
             // Yanıt başarılıysa ana sayfaya yönlendir
-            if (response.ok) {
-                window.location.href = '/main';
-            } else {
+
+                if (response.ok) {
+                const redirectUrl = await response.text();
+                window.location.href = redirectUrl;
+                }
+                 else {
                 // Başarısızsa, sunucudan gelen hata mesajını göster
                 const errorText = await response.text();
                 errorMessageDiv.textContent = errorText || 'An unknown error occurred.';
