@@ -29,6 +29,10 @@ public class BookService {
         this.userRepository = userRepository;
     }
 
+    public List<Book> getAllBooks() {
+        return bookRepository.findAll();
+    }
+
     public Optional<Book> getBookById(Long id) {
         return bookRepository.findById(id);
     }
@@ -75,7 +79,6 @@ public class BookService {
         book.setAvailableCopies(book.getAvailableCopies() - 1);
         bookRepository.save(book);
 
-        // Create borrow record
         Borrow borrow = new Borrow();
         borrow.setBook(book);
         borrow.setUser(user);
@@ -83,5 +86,14 @@ public class BookService {
         borrow.setReturnDate(LocalDateTime.now().plusDays(14));
         borrow.setStatus("BORROWED");
         borrowRepository.save(borrow);
+    }
+    public void saveBook(Book book){
+        bookRepository.save(book);
+    }
+    public void deleteBook(Book book){
+        bookRepository.delete(book);
+    }
+    public void deleteBook(Long id){
+        bookRepository.deleteById(id);
     }
 }

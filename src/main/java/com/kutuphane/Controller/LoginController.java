@@ -31,7 +31,7 @@ public class LoginController {
         if (loggedUser != null) {
             session.setAttribute("loggedUser", loggedUser);
             if ("ADMIN".equals(loggedUser.getRole())) {
-                return ResponseEntity.ok("/admin-page");
+                return ResponseEntity.ok("/admin/page");
             }
             return ResponseEntity.ok("/main");
         } else {
