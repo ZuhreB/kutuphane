@@ -4,194 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-container {
-            background-color: #ffffff;
-            padding: 2.5rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            box-sizing: border-box;
-        }
-
-        h2 {
-            text-align: center;
-            color: #1c1e21;
-            margin-bottom: 1.5rem;
-        }
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #606770;
-            font-weight: 600;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #dddfe2;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 1rem;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #1877f2;
-            box-shadow: 0 0 0 2px rgba(24, 119, 242, 0.2);
-        }
-//login button
-        .login-btn {
-            width: 100%;
-            padding: 0.75rem;
-            border: none;
-            border-radius: 6px;
-            background-color: #1877f2;
-            color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .login-btn:hover {
-            background-color: #166fe5;
-        }
-
-
-        .options {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
-
-        .options a {
-            color: #1877f2;
-            text-decoration: none;
-        }
-
-        .options a:hover {
-            text-decoration: underline;
-        }
-
-        /* Yeni hesap oluşturma linki */
-        .signup-link {
-            text-align: center;
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #dddfe2;
-            font-size: 0.9rem;
-        }
-
-        .signup-link a {
-            color: #42b72a;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        .signup-link a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <!-- Font Awesome ikonları için CDN linki -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <!-- Harici CSS dosyamız -->
+    <link rel="stylesheet" th:href="@{/css/login.css}" />
 </head>
 <body>
 
 <div class="login-container">
-    <h2>Log in to your account </h2>
+    <div class="logo">
+        <i class="fas fa-book-open"></i>
+    </div>
+    <h2>Log in to your account</h2>
 
-    <div id="error-message" style="padding: 1rem; margin-bottom: 1rem; border-radius: 6px; background-color: #fdeeee; color: #d93025; text-align: center; font-weight: 500; display: none;"></div>
+    <div id="error-message" class="error-message" style="display:none;"></div>
 
-    <form id="login-form">
+    <form id="login-form" autocomplete="off">
         <div class="form-group">
-            <label for="username">User Name</label>
-            <input type="text" id="username" name="username" placeholder="Kullanıcı adınızı girin" required>
+            <input type="text" id="username" name="username" placeholder="Username" required>
+            <i class="icon fas fa-user"></i>
         </div>
         <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Şifrenizi girin" required>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+            <i class="icon fas fa-lock"></i>
         </div>
         <button type="submit" class="login-btn">Log in</button>
 
         <div class="options">
-            <label>
-                <input type="checkbox" name="remember-me"> Remember me
-            </label>
-            <a href="#">Forgot password?</a>
-        </div>
-
-        <div class="signup-link">
-            Do not have an account? <a th:href="@{/register}">Create a new account</a>
+            <!-- Bu kısımlar gelecekte eklenebilir -->
         </div>
     </form>
 </div>
 
-<script>
-    const loginForm = document.getElementById('login-form');
-    const errorMessageDiv = document.getElementById('error-message');
-    const submitButton = loginForm.querySelector('.login-btn');
-
-    loginForm.addEventListener('submit', async (event) => {
-        // Formun varsayılan sayfa yenileme davranışını engelle
-        event.preventDefault();
-
-        // Önceki hataları temizle ve butonu devre dışı bırak
-        errorMessageDiv.style.display = 'none';
-        errorMessageDiv.textContent = '';
-        submitButton.disabled = true;
-        submitButton.textContent = 'Logging in...';
-
-        // Form verilerini al
-        const formData = new FormData(loginForm);
-        const data = Object.fromEntries(formData.entries());
-
-        try {
-            // API'ye POST isteği gönder (artık /login adresine)
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            // Yanıt başarılıysa ana sayfaya yönlendir
-
-                if (response.ok) {
-                const redirectUrl = await response.text();
-                window.location.href = redirectUrl;
-                }
-                 else {
-                // Başarısızsa, sunucudan gelen hata mesajını göster
-                const errorText = await response.text();
-                errorMessageDiv.textContent = errorText || 'An unknown error occurred.';
-                errorMessageDiv.style.display = 'block';
-            }
-
-        } catch (error) {
-            // Ağ hatası gibi bir sorun olursa
-            console.error('Login fetch error:', error);
-            errorMessageDiv.textContent = 'Could not connect to the server. Please try again later.';
-            errorMessageDiv.style.display = 'block';
-        } finally {
-            // Hata durumunda butonu tekrar aktif et
-            submitButton.disabled = false;
-            submitButton.textContent = 'Log in';
-        }
-    });
-</script>
-
+<!-- Harici JavaScript dosyamız -->
+<script th:src="@{/js/login.js}"></script>
 </body>
 </html>
