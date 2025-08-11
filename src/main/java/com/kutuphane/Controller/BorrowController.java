@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -60,4 +61,11 @@ public class BorrowController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+    @GetMapping("/borrow-page")
+    public String bookDetails(@RequestParam Long bookId, Model model) {
+        List<Book> book = bookService.findById(bookId);
+        model.addAttribute("book", book);
+        return "borrow-page";
+    }
+
 }
