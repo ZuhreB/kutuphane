@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const sidenav = document.getElementById("mySidenav");
   const overlay = document.getElementById("overlay");
-  const mainNav = document.getElementById("mainNav"); // The desktop sidebar
+  // mainNav burada doğrudan kullanılmıyor, ancak diğer elemanlar için tanımlanmış.
 
   function toggleNav() {
     const isOpen = sidenav.style.width === "250px";
@@ -29,51 +29,58 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchButton = document.getElementById('search-button');
   const resultsContainer = document.getElementById('search-results-container');
 
-  if (!searchForm) {
-    console.error('search-form element not found!');
-    // No search form on this page, exit early to prevent errors
-    return;
+  // Sadece searchForm varsa event listener ekle
+  if (searchForm) {
+    searchForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const query = searchQueryInput.value.trim();
+      const type = searchTypeSelect.value;
+
+      if (!query) {
+        resultsContainer.innerHTML = `<div class="no-results">Lütfen bir arama terimi girin.</div>`;
+        return;
+      }
+
+      searchButton.disabled = true;
+      searchButton.textContent = 'Aranıyor...';
+      resultsContainer.innerHTML = `<div class="no-results">Yükleniyor...</div>`;
+
+      try {
+        const response = await fetch(`/api/books/search?type=${type}&query=${query}`);
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Sunucu Hatası: ${response.status}. ${errorText}`);
+        }
+        const books = await response.json();
+        renderResults(books);
+      } catch (error) {
+        console.error('Veri çekme hatası:', error);
+        resultsContainer.innerHTML = `<div class="no-results" style="background-color: #fdeeee; color: #d93025;">Bir hata oluştu. Detaylar için konsolu kontrol edin.</div>`;
+      } finally {
+        searchButton.disabled = false;
+        searchButton.textContent = 'Ara';
+      }
+    });
+  } else {
+    console.warn('ID "search-form" olan arama formu bulunamadı. Arama işlevi aktif olmayacak.');
   }
 
-  searchForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const query = searchQueryInput.value.trim();
-    const type = searchTypeSelect.value;
-
-    if (!query) {
-      resultsContainer.innerHTML = `<div class="no-results">Please enter a search term.</div>`;
-      return;
-    }
-
-    searchButton.disabled = true;
-    searchButton.textContent = 'Searching...';
-    resultsContainer.innerHTML = `<div class="no-results">Loading...</div>`;
-
-    try {
-      const response = await fetch(`/api/books/search?type=${type}&query=${query}`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Server Error: ${response.status}. ${errorText}`);
-      }
-      const books = await response.json();
-      renderResults(books);
-    } catch (error) {
-      console.error('Fetch error:', error);
-      resultsContainer.innerHTML = `<div class="no-results" style="background-color: #fdeeee; color: #d93025;">An error occurred. Check the console for details.</div>`;
-    } finally {
-      searchButton.disabled = false;
-      searchButton.textContent = 'Search';
-    }
-  });
 
   function renderResults(books) {
     if (!books || books.length === 0) {
-      resultsContainer.innerHTML = `<div class="no-results">No books found for your query.</div>`;
+      resultsContainer.innerHTML = `<div class="no-results">Aramanızla eşleşen kitap bulunamadı.</div>`;
       return;
     }
 
     const tableRows = books.map(book => {
       const availableClass = book.availableCopies > 0 ? 'available' : 'unavailable';
+      // 'Available Date' mantığı:
+      // Eğer kitap müsaitse (availableCopies > 0), bugünün tarihini göster.
+      // Aksi takdirde, eğer expectedReturnDate varsa onu göster, yoksa 'N/A' (Bilgi Yok) göster.
+      const availableDate = book.availableCopies > 0
+          ? new Date().toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' }) // Bugünün tarihi
+          : (book.expectedReturnDate ? new Date(book.expectedReturnDate).toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'N/A'); // Backend'den gelen beklenen iade tarihi
+
       return `
         <tr data-available="${book.availableCopies}"
             data-title="${book.title || 'N/A'}"
@@ -83,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${book.isbn || 'N/A'}</td>
           <td>${book.topic || 'N/A'}</td>
           <td class="${availableClass}">${book.availableCopies}</td>
-        </tr>
+          <td>${availableDate}</td> </tr>
       `;
     }).join('');
 
@@ -91,12 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
       <table class="results-table">
         <thead>
           <tr>
-            <th>Title</th>
-            <th>Author</th>
+            <th>Başlık</th>
+            <th>Yazar</th>
             <th>ISBN</th>
-            <th>Topic</th>
-            <th>Available</th>
-          </tr>
+            <th>Konu</th>
+            <th>Mevcut</th>
+            <th>Durum Tarihi</th> </tr>
         </thead>
         <tbody>
           ${tableRows}
@@ -112,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = this.getAttribute('data-title');
         const bookId = this.getAttribute('data-id');
 
-       window.location.href = `/borrow-page?bookId=${bookId}`;
+        window.location.href = `/borrow-page?bookId=${bookId}`;
       });
     });
   }

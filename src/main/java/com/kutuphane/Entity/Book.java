@@ -3,6 +3,7 @@ package com.kutuphane.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 @Getter
 @Setter
@@ -14,6 +15,8 @@ import java.time.LocalDateTime;
 @Table(name = "Books")
 public class Book {
 
+    @Transient // JPA'nın bu alanı kalıcı hale getirmemesini sağlar
+    private LocalDate expectedReturnDate;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bookID;
@@ -49,5 +52,13 @@ public class Book {
 
     @Column(name ="Topic",nullable=true)
     private String topic;
+
+    public LocalDate getExpectedReturnDate() {
+        return expectedReturnDate;
+    }
+
+    public void setExpectedReturnDate(LocalDate expectedReturnDate) {
+        this.expectedReturnDate = expectedReturnDate;
+    }
 
 }

@@ -1,13 +1,37 @@
 package com.kutuphane.Controller;
 
+import com.kutuphane.Entity.Book; // Book entity'mizi import ediyoruz
+import com.kutuphane.Entity.Borrow; // Borrow entity'mizi import ediyoruz
 import com.kutuphane.Entity.User;
-import jakarta.servlet.http.HttpSession;
+import com.kutuphane.Repository.BookRepository; // BookRepository'yi import edin
+import com.kutuphane.Repository.BorrowRepository; // BorrowRepository'yi import edin (Eğer yoksa oluşturun)
+
+import jakarta.servlet.http.HttpSession; // Jakarta persistence için HttpSession
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.ResponseEntity;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime; // LocalDateTime kullanıldığı için
+import java.util.List;
 
 @Controller
 public class MainController {
+
+    @Autowired
+    private BookRepository bookRepository; // BookRepository'yi inject edin
+
+    @Autowired
+    private BorrowRepository borrowRepository; // BorrowRepository'yi inject edin
+
+    // Eğer User entitesi için repository kullanıyorsanız onu da inject edin
+    // @Autowired
+    // private UserRepository userRepository;
+
 
     @GetMapping("/main")
     public String mainPage(Model model, HttpSession session) {
@@ -15,14 +39,59 @@ public class MainController {
         if (loggedUser == null) {
             return "redirect:/login";
         }
-        // *** BU SATIRI EKLEYİN ***
         System.out.println("Giriş Yapan Kullanıcının Rolü: " + loggedUser.getRole());
 
-        model.addAttribute("loggedUser", loggedUser); // Giriş yapmış kullanıcıyı modele ekle
+        model.addAttribute("loggedUser", loggedUser);
         model.addAttribute("pageTitle", "Kütüphane Ana Sayfası");
 
-        // Main content fragment'ı hala aynı şekilde gönderiyoruz
+        List<Book> books = bookRepository.findAll();
+        populateExpectedReturnDates(books); // expectedReturnDate'leri dolduran yardımcı metot
+        model.addAttribute("books", books); // Doldurulmuş Book listesini gönder
+
         model.addAttribute("contentFragment", "fragments/main-content :: contentFragment");
-        return "layout"; // Yeni layout şablonunu döndür
+        return "layout";
+    }
+
+    @GetMapping("/api/books/search") // Bu metot kalacak ve çalışmaya devam edecek
+    @ResponseBody
+    public ResponseEntity<List<Book>> searchBooks(@RequestParam String type, @RequestParam String query) {
+        List<Book> foundBooks;
+        switch (type.toLowerCase()) {
+            case "title":
+                foundBooks = bookRepository.findByTitleContainingIgnoreCase(query);
+                break;
+            case "author":
+                foundBooks = bookRepository.findByAuthor_FirstNameContainingIgnoreCase(query);
+                break;
+            case "isbn":
+                foundBooks = bookRepository.findByIsbnIgnoreCase(query);
+                break;
+            case "topic":
+                foundBooks = bookRepository.findByTopicContainingIgnoreCase(query);
+                break;
+            default:
+                return ResponseEntity.badRequest().build();
+        }
+
+        populateExpectedReturnDates(foundBooks);
+
+        return ResponseEntity.ok(foundBooks);
+    }
+
+    private void populateExpectedReturnDates(List<Book> books) {
+        if (books == null || books.isEmpty()) {
+            return;
+        }
+        books.forEach(book -> {
+            if (book.getAvailableCopies() == 0) {
+                List<Borrow> activeBorrows = borrowRepository.findByBookBookIDAndActualReturnDateIsNullOrderByReturnDateAsc(book.getBookID());
+
+                if (!activeBorrows.isEmpty()) {
+
+                    System.out.println(book.getTitle()+"burdayım");
+                    book.setExpectedReturnDate(LocalDate.from(activeBorrows.get(0).getReturnDate()));
+                }
+            }
+        });
     }
 }

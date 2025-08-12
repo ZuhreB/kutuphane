@@ -22,18 +22,5 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    @GetMapping("/search")
-    public ResponseEntity<List<Book>> searchBooks(
-            @RequestParam("query") String query,
-            @RequestParam("type") String type) {
 
-        List<Book> results = switch (type.toLowerCase()) {
-            case "title" -> bookService.searchByTitle(query);
-            case "author" -> bookService.searchByAuthor(query);
-            case "isbn" -> bookService.searchByISBN(query);
-            case "topic"-> bookService.searchByTopic(query);
-            default -> List.of();
-        };
-        return ResponseEntity.ok(results);
-    }
 }

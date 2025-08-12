@@ -15,7 +15,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long userid;
+    private Long userID;
 
     @Column(name = "Username", unique = true, nullable = false, length = 50)
     private String username; //kullanıcı adı olarak

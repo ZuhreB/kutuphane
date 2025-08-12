@@ -21,6 +21,11 @@ h1, h2 { color: #1c1e21; }
 .results-table tbody tr:nth-child(odd) { background-color: #f9f9f9; }
 .results-table tbody tr { cursor: pointer; transition: background-color 0.2s; }
 .results-table tbody tr:hover { background-color: #e9e9e9; }
+.results-table th:nth-child(6),
+.results-table td:nth-child(6) {
+    width: 150px; /* Available Date sütunu genişliği */
+    text-align: center;
+}
 .no-results { color: #606770; background-color: #f0f2f5; padding: 1rem; border-radius: 6px; text-align: center; }
 .available { color:white ; background-color: green; font-weight: bold; }
 .unavailable { color: black; background-color: red; font-weight: bold; }

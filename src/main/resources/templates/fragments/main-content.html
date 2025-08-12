@@ -17,5 +17,23 @@
     <button type="submit" id="search-button">Search</button>
   </form>
 
-  <div id="search-results-container"></div>
+  <div id="search-results-container">
+    <!-- Tablo yapısı JavaScript tarafında dinamik olarak oluşturulacak -->
+    <!-- Ancak başlıklar için referans olması açısından yapıyı gösteriyorum -->
+    <table class="results-table" style="display: none;">
+      <thead>
+      <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>ISBN</th>
+        <th>Topic</th>
+        <th>Available</th>
+        <th>Available Date</th> <!-- Yeni eklenen sütun -->
+      </tr>
+      </thead>
+      <tbody>
+      <!-- JavaScript tarafından doldurulacak -->
+      </tbody>
+    </table>
+  </div>
 </div>

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/main.css}" />
     <style>
-        /* Your existing CSS styles */
+        /* Ana CSS yapısı: Sayfa düzeni (grid) ve element konumlandırmaları */
         body {
             display: grid;
             grid-template-areas:
@@ -15,37 +15,37 @@
                 "nav article article"
                 "nav footer footer";
             grid-template-rows: 80px 1fr 70px;
-            grid-template-columns: 250px 1fr; /* Adjusted for sidebar width */
+            grid-template-columns: 250px 1fr; /* Sidebar genişliği için ayarlandı */
             gap: 10px;
             height: 100vh;
             margin: 0;
-            background-color: #f0f2f5; /* Match main.css body background */
+            background-color: #f0f2f5; /* main.css body background ile uyumlu */
         }
         #pageHeader {
             grid-area: header;
-            background-color: #ffffff; /* Match navbar background */
+            background-color: #ffffff; /* Navbar background ile uyumlu */
             padding: 1rem 2rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
+            position: sticky; /* Sayfa kaydığında üstte kalması için */
             top: 0;
             z-index: 99;
         }
         #mainArticle {
             grid-area: article;
-            background-color: #fff; /* Match container background */
+            background-color: #fff; /* Konteyner background ile uyumlu */
             padding: 2rem;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin: 0; /* Remove default margin */
-            overflow-y: auto; /* Enable scrolling for content */
+            margin: 0; /* Varsayılan kenar boşluğunu kaldır */
+            overflow-y: auto; /* İçerik için kaydırmayı etkinleştir */
         }
         #mainNav {
             grid-area: nav;
-            background-color: #1c1e21; /* Match sidenav background */
-            padding-top: 60px; /* Adjust for potential header overlap */
+            background-color: #1c1e21; /* Sidenav background ile uyumlu */
+            padding-top: 60px; /* Header çakışmasını engellemek için ayarlandı */
             overflow-x: hidden;
             transition: 0.4s cubic-bezier(0.1, 0.7, 0.6, 1);
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
@@ -59,7 +59,7 @@
             color: #606770;
         }
 
-        /* Adjustments for the yanmenü-btn to be inside header */
+        /* Header içindeki yanmenü-btn için ayarlamalar */
         .header-content {
             display: flex;
             align-items: center;
@@ -68,7 +68,7 @@
             font-size: 1.5rem;
             font-weight: bold;
             color: #1877f2;
-            margin-left: 1rem; /* Space after button */
+            margin-left: 1rem; /* Butondan sonra boşluk */
         }
         .user-info {
             display: flex;
@@ -81,7 +81,7 @@
             font-weight: 600;
         }
 
-        /* --- yan menü for fixed sidebar --- */
+        /* Yan menü (sabit sidebar) için stiller */
         #mainNav a {
             padding: 10px 15px 10px 32px;
             text-decoration: none;
@@ -94,51 +94,50 @@
             color: #ffffff;
         }
 
-
-        @media all and (max-width: 768px) { /* Adjusted breakpoint */
+        /* Mobil uyumluluk için medya sorguları */
+        @media all and (max-width: 768px) { /* Ayarlanmış kırılma noktası */
             body {
                 grid-template-areas:
                     "header"
                     "nav"
                     "article"
                     "footer";
-                grid-template-rows: 80px 250px 1fr 70px; /* Nav becomes fixed height and stacked */
+                grid-template-rows: 80px 250px 1fr 70px; /* Nav sabit yükseklik ve üst üste */
                 grid-template-columns: 1fr;
             }
             #mainNav {
-                width: 100%; /* Make nav full width when stacked */
-                position: relative; /* Change to relative for stacking */
-                height: auto; /* Allow content to dictate height */
-                padding-top: 0; /* Remove padding */
+                width: 100%; /* Üst üste olduğunda nav tam genişlik */
+                position: relative; /* Üst üste dizilme için göreceli konum */
+                height: auto; /* İçeriğe göre yükseklik */
+                padding-top: 0; /* Dolgu kaldır */
             }
-            /* Hide the fixed sidebar if screen is small and not using the toggle */
+            /* Küçük ekranlarda sabit sidebar'ı gizle */
             .sidenav {
-                width: 0; /* Initially hidden */
-                position: fixed; /* Keep it fixed for toggle */
+                width: 0; /* Başlangıçta gizli */
+                position: fixed; /* Geçiş için sabit tut */
                 left: 0;
                 top: 0;
             }
             .sidenav.open {
-                width: 250px; /* Show when open */
+                width: 250px; /* Açıldığında göster */
             }
             #overlay {
-                display: block; /* Always potentially show overlay for small screens */
+                display: block; /* Küçük ekranlar için her zaman potansiyel olarak göster */
             }
             #pageHeader .yanmenü-btn {
-                display: inline-block; /* Show toggle button on small screens */
+                display: inline-block; /* Küçük ekranlarda geçiş düğmesini göster */
             }
         }
 
-        /* Hide the sidebar for desktop view, the mainNav will be the sidebar */
+        /* Masaüstü görünümü için sidebar'ı gizle, mainNav sidebar olacak */
         .sidenav { display: none; }
         .overlay { display: none; }
 
         @media all and (min-width: 769px) {
             #pageHeader .yanmenü-btn {
-                display: none; /* Hide toggle button on large screens */
+                display: none; /* Büyük ekranlarda geçiş düğmesini gizle */
             }
         }
-        /* End of your existing CSS styles */
     </style>
 </head>
 <body>
@@ -156,12 +155,13 @@
 </header>
 
 <nav id="mainNav">
-    <div th:if="${loggedUser.role != null and loggedUser.role.toUpperCase() == 'ADMIN'}" th:replace="fragments/admin-sidebar :: admin-sidebar"></div>
-    <div th:unless="${loggedUser.role != null and loggedUser.role.toUpperCase() == 'ADMIN'}" th:replace="fragments/user-sidebar :: user-sidebar"></div>
+    <div th:replace="${loggedUser?.role?.toUpperCase() eq 'ADMIN'}
+         ? ~{fragments/admin-sidebar :: admin-sidebar}
+         : ~{fragments/user-sidebar :: user-sidebar}"></div>
 </nav>
 
 <article id="mainArticle">
-    <div th:replace="fragments/main-content :: contentFragment"></div>
+    <div th:replace="~{fragments/main-content :: contentFragment}"></div>
 </article>
 
 <footer id="pageFooter">
@@ -172,8 +172,9 @@
 
 <div id="mySidenav" class="sidenav">
     <a href="javascript:void(0)" class="closebtn" onclick="toggleNav()">&times;</a>
-    <div th:if="${loggedUser.role != null and loggedUser.role.toUpperCase() == 'ADMIN'}" th:replace="fragments/admin-sidebar :: admin-sidebar"></div>
-    <div th:unless="${loggedUser.role != null and loggedUser.role.toUpperCase() == 'ADMIN'}" th:replace="fragments/user-sidebar :: user-sidebar"></div>
+    <div th:replace="${loggedUser?.role?.toUpperCase() eq 'ADMIN'}
+         ? ~{fragments/admin-sidebar :: admin-sidebar}
+         : ~{fragments/user-sidebar :: user-sidebar}"></div>
 </div>
 
 <script th:src="@{/js/main.js}"></script>
