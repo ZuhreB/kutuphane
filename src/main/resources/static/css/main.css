@@ -1,8 +1,13 @@
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f0f2f5; margin: 0; transition: background-color 0.4s; }
-.navbar { background-color: #ffffff; padding: 1rem 2rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 99; }
-.navbar .logo { font-size: 1.5rem; font-weight: bold; color: #1877f2; }
-.navbar .user-info a { color: #d93025; text-decoration: none; font-weight: 600; }
-.container { max-width: 900px; margin: 2rem auto; background-color: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+
+/* Navbar styles are now in layout.html header */
+/* .navbar { background-color: #ffffff; padding: 1rem 2rem; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 99; } */
+/* .navbar .logo { font-size: 1.5rem; font-weight: bold; color: #1877f2; } */
+/* .navbar .user-info a { color: #d93025; text-decoration: none; font-weight: 600; } */
+
+/* Container styles are now in layout.html mainArticle */
+/* .container { max-width: 900px; margin: 2rem auto; background-color: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); } */
+
 h1, h2 { color: #1c1e21; }
 .search-form { display: flex; gap: 10px; margin-bottom: 2rem; }
 .search-form input[type="text"] { flex-grow: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; }
@@ -37,9 +42,11 @@ h1, h2 { color: #1c1e21; }
   font-size: 28px;
   color: #1c1e21;
 }
+
+/* The sidenav class is now for the mobile overlay menu */
 .sidenav {
   height: 100%;
-  width: 0;
+  width: 0; /* Hidden by default */
   position: fixed;
   z-index: 100;
   top: 0;

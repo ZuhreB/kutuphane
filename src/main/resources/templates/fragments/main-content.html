@@ -1,0 +1,21 @@
+<div th:fragment="contentFragment" xmlns:th="http://www.w3.org/1999/xhtml">
+  <h1>Welcome, <span th:text="${loggedUser.firstName ?: 'User'}">User</span>!</h1>
+  <p>You can start searching for books.</p>
+
+  <hr style="margin: 2rem 0;">
+
+  <h2>Book Search</h2>
+
+  <form id="search-form" class="search-form" autocomplete="off">
+    <select id="search-type" name="type">
+      <option value="title">Title</option>
+      <option value="author">Author</option>
+      <option value="isbn">ISBN</option>
+      <option value="topic">Topic</option>
+    </select>
+    <input type="text" id="search-query" name="query" placeholder="Search for books..." required/>
+    <button type="submit" id="search-button">Search</button>
+  </form>
+
+  <div id="search-results-container"></div>
+</div>

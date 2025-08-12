@@ -10,14 +10,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class MainController {
 
     @GetMapping("/main")
-    public String showMainPage(HttpSession session, Model model) {
+    public String mainPage(Model model, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
-
         if (loggedUser == null) {
             return "redirect:/login";
         }
+        // *** BU SATIRI EKLEYİN ***
+        System.out.println("Giriş Yapan Kullanıcının Rolü: " + loggedUser.getRole());
 
-        model.addAttribute("userName", loggedUser.getFirstName());
-        return "main-page"; // templates/main-page.html dosyasını göster.
+        model.addAttribute("loggedUser", loggedUser); // Giriş yapmış kullanıcıyı modele ekle
+        model.addAttribute("pageTitle", "Kütüphane Ana Sayfası");
+
+        // Main content fragment'ı hala aynı şekilde gönderiyoruz
+        model.addAttribute("contentFragment", "fragments/main-content :: contentFragment");
+        return "layout"; // Yeni layout şablonunu döndür
     }
 }

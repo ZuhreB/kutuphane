@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ?: 'Library Management System'">Library Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <style>
+        /* Your existing CSS styles */
+        body {
+            display: grid;
+            grid-template-areas:
+                "header header header"
+                "nav article article"
+                "nav footer footer";
+            grid-template-rows: 80px 1fr 70px;
+            grid-template-columns: 250px 1fr; /* Adjusted for sidebar width */
+            gap: 10px;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5; /* Match main.css body background */
+        }
+        #pageHeader {
+            grid-area: header;
+            background-color: #ffffff; /* Match navbar background */
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+        #mainArticle {
+            grid-area: article;
+            background-color: #fff; /* Match container background */
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin: 0; /* Remove default margin */
+            overflow-y: auto; /* Enable scrolling for content */
+        }
+        #mainNav {
+            grid-area: nav;
+            background-color: #1c1e21; /* Match sidenav background */
+            padding-top: 60px; /* Adjust for potential header overlap */
+            overflow-x: hidden;
+            transition: 0.4s cubic-bezier(0.1, 0.7, 0.6, 1);
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        #pageFooter {
+            grid-area: footer;
+            background-color: #ffffff;
+            padding: 1.2em;
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            color: #606770;
+        }
+
+        /* Adjustments for the yanmenü-btn to be inside header */
+        .header-content {
+            display: flex;
+            align-items: center;
+        }
+        .header-content .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1877f2;
+            margin-left: 1rem; /* Space after button */
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-info a {
+            color: #d93025;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* --- yan menü for fixed sidebar --- */
+        #mainNav a {
+            padding: 10px 15px 10px 32px;
+            text-decoration: none;
+            font-size: 22px;
+            color: #a0a0a0;
+            display: block;
+            transition: 0.3s;
+        }
+        #mainNav a:hover {
+            color: #ffffff;
+        }
+
+
+        @media all and (max-width: 768px) { /* Adjusted breakpoint */
+            body {
+                grid-template-areas:
+                    "header"
+                    "nav"
+                    "article"
+                    "footer";
+                grid-template-rows: 80px 250px 1fr 70px; /* Nav becomes fixed height and stacked */
+                grid-template-columns: 1fr;
+            }
+            #mainNav {
+                width: 100%; /* Make nav full width when stacked */
+                position: relative; /* Change to relative for stacking */
+                height: auto; /* Allow content to dictate height */
+                padding-top: 0; /* Remove padding */
+            }
+            /* Hide the fixed sidebar if screen is small and not using the toggle */
+            .sidenav {
+                width: 0; /* Initially hidden */
+                position: fixed; /* Keep it fixed for toggle */
+                left: 0;
+                top: 0;
+            }
+            .sidenav.open {
+                width: 250px; /* Show when open */
+            }
+            #overlay {
+                display: block; /* Always potentially show overlay for small screens */
+            }
+            #pageHeader .yanmenü-btn {
+                display: inline-block; /* Show toggle button on small screens */
+            }
+        }
+
+        /* Hide the sidebar for desktop view, the mainNav will be the sidebar */
+        .sidenav { display: none; }
+        .overlay { display: none; }
+
+        @media all and (min-width: 769px) {
+            #pageHeader .yanmenü-btn {
+                display: none; /* Hide toggle button on large screens */
+            }
+        }
+        /* End of your existing CSS styles */
+    </style>
+</head>
+<body>
+<header id="pageHeader">
+    <div class="header-content">
+        <button class="yanmenü-btn" onclick="toggleNav()">
+            <i class="yanmenü-icon fas fa-bars"></i>
+        </button>
+        <div class="logo">Kütüphane</div>
+    </div>
+    <div class="user-info">
+        <span th:text="${loggedUser.firstName}">Kullanıcı</span>
+        <a th:href="@{/logout}">Çıkış Yap</a>
+    </div>
+</header>
+
+<nav id="mainNav">
+    <div th:if="${loggedUser.role != null and loggedUser.role.toUpperCase() == 'ADMIN'}" th:replace="fragments/admin-sidebar :: admin-sidebar"></div>
+    <div th:unless="${loggedUser.role != null and loggedUser.role.toUpperCase() == 'ADMIN'}" th:replace="fragments/user-sidebar :: user-sidebar"></div>
+</nav>
+
+<article id="mainArticle">
+    <div th:replace="fragments/main-content :: contentFragment"></div>
+</article>
+
+<footer id="pageFooter">
+    &copy; 2025 Kütüphane Yönetim Sistemi. Tüm hakları saklıdır.
+</footer>
+
+<div id="overlay" class="overlay" onclick="toggleNav()"></div>
+
+<div id="mySidenav" class="sidenav">
+    <a href="javascript:void(0)" class="closebtn" onclick="toggleNav()">&times;</a>
+    <div th:if="${loggedUser.role != null and loggedUser.role.toUpperCase() == 'ADMIN'}" th:replace="fragments/admin-sidebar :: admin-sidebar"></div>
+    <div th:unless="${loggedUser.role != null and loggedUser.role.toUpperCase() == 'ADMIN'}" th:replace="fragments/user-sidebar :: user-sidebar"></div>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

@@ -1,13 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
   const sidenav = document.getElementById("mySidenav");
   const overlay = document.getElementById("overlay");
+  const mainNav = document.getElementById("mainNav"); // The desktop sidebar
 
   function toggleNav() {
     const isOpen = sidenav.style.width === "250px";
     if (isOpen) {
       sidenav.style.width = "0";
-      overlay.style.display = "none";
       overlay.style.opacity = 0;
+      setTimeout(() => {
+        overlay.style.display = "none";
+      }, 400); // Wait for transition to finish before hiding
     } else {
       sidenav.style.width = "250px";
       overlay.style.display = "block";
@@ -28,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!searchForm) {
     console.error('search-form element not found!');
+    // No search form on this page, exit early to prevent errors
     return;
   }
 
