@@ -74,52 +74,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const tableRows = books.map(book => {
       const availableClass = book.availableCopies > 0 ? 'available' : 'unavailable';
-      // 'Available Date' mantığı:
-      // Eğer kitap müsaitse (availableCopies > 0), bugünün tarihini göster.
-      // Aksi takdirde, eğer expectedReturnDate varsa onu göster, yoksa 'N/A' (Bilgi Yok) göster.
       const availableDate = book.availableCopies > 0
-          ? new Date().toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' }) // Bugünün tarihi
-          : (book.expectedReturnDate ? new Date(book.expectedReturnDate).toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'N/A'); // Backend'den gelen beklenen iade tarihi
+          ? new Date().toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' })
+          : (book.expectedReturnDate ? new Date(book.expectedReturnDate).toLocaleDateString('tr-TR', { year: 'numeric', month: '2-digit', day: '2-digit' }) : 'N/A');
 
       return `
-        <tr data-available="${book.availableCopies}"
-            data-title="${book.title || 'N/A'}"
-            data-id="${book.bookID}">
-          <td>${book.title || 'N/A'}</td>
-          <td>${book.author ? (book.author.firstName + ' ' + book.author.lastName) : 'N/A'}</td>
-          <td>${book.isbn || 'N/A'}</td>
-          <td>${book.topic || 'N/A'}</td>
-          <td class="${availableClass}">${book.availableCopies}</td>
-          <td>${availableDate}</td> </tr>
-      `;
+            <tr data-available="${book.availableCopies}"
+                data-title="${book.title || 'N/A'}"
+                data-id="${book.bookID}">
+                <td>${book.title || 'N/A'}</td>
+                <td>${book.author ? (book.author.firstName + ' ' + book.author.lastName) : 'N/A'}</td>
+                <td>${book.isbn || 'N/A'}</td>
+                <td>${book.topic || 'N/A'}</td>
+                <td class="${availableClass}">${book.availableCopies}</td>
+                <td>${availableDate}</td>
+            </tr>
+        `;
     }).join('');
 
     resultsContainer.innerHTML = `
-      <table class="results-table">
-        <thead>
-          <tr>
-            <th>Başlık</th>
-            <th>Yazar</th>
-            <th>ISBN</th>
-            <th>Konu</th>
-            <th>Mevcut</th>
-            <th>Durum Tarihi</th> </tr>
-        </thead>
-        <tbody>
-          ${tableRows}
-        </tbody>
-      </table>
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Başlık</th>
+                    <th>Yazar</th>
+                    <th>ISBN</th>
+                    <th>Konu</th>
+                    <th>Mevcut</th>
+                    <th>Durum Tarihi</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tableRows}
+            </tbody>
+        </table>
     `;
 
-    // Satırlara tıklama eventi ekle
+    // Satırlara tıklama eventi ekle (artık sayfa açmak yerine mesaj gösteriyor)
     const rows = document.querySelectorAll('.results-table tbody tr');
     rows.forEach(row => {
-      row.addEventListener('click', function () {
+      row.addEventListener('click', function() {
         const available = parseInt(this.getAttribute('data-available'));
         const title = this.getAttribute('data-title');
-        const bookId = this.getAttribute('data-id');
 
-        window.location.href = `/borrow-page?bookId=${bookId}`;
+        if (available > 0) {
+          alert(`"${title}" kitabını alabilirsiniz!`);
+        } else {
+          alert(`"${title}" kitabı şu anda alınamaz (Müsait değil)`);
+        }
       });
     });
   }
