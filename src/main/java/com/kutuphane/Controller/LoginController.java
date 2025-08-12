@@ -27,11 +27,14 @@ public class LoginController {
     @ResponseBody
     public ResponseEntity<String> Login(@RequestBody User loginData, HttpSession session) {
         User loggedUser = userService.loginUser(loginData.getUsername(), loginData.getPassword());
-
+        System.out.println("loggedUser: " + loggedUser.getRole());
         if (loggedUser != null) {
             session.setAttribute("loggedUser", loggedUser);
             if ("ADMIN".equals(loggedUser.getRole())) {
                 return ResponseEntity.ok("/admin/page");
+            }
+            if("EMPLOYEE".equals(loggedUser.getRole())) {
+                return ResponseEntity.ok("/employee/page");
             }
             return ResponseEntity.ok("/main");
         } else {

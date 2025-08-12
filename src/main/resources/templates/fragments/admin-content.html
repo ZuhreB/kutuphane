@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="stylesheet" th:href="@{/css/admin.css}" />
+</head>
+<body>
+
+<div th:fragment="admin-content">
+  <div class="admin-header">
+    <h1>Admin Paneli</h1>
+    <p class="welcome-message">Hoş geldiniz, <span th:text="${loggedUser.firstName}"></span>!</p>
+  </div>
+
+  <div class="admin-stats">
+    <div class="stat-card">
+      <h3>Toplam Kitap</h3>
+      <p th:text="${books.size()}">0</p>
+    </div>
+    <!-- Diğer istatistik kartları buraya eklenebilir -->
+  </div>
+
+  <div class="admin-actions">
+    <a th:href="@{/admin/books/new}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Yeni Kitap Ekle
+    </a>
+  </div>
+
+  <div class="admin-table-container">
+    <table class="admin-table">
+      <thead>
+      <tr>
+        <th>ID</th>
+        <th>Başlık</th>
+        <th>Yazar</th>
+        <th>İşlemler</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="book : ${books}">
+        <td th:text="${book.bookID}"></td>
+        <td>
+          <a th:href="@{'/admin/books/detail/' + ${book.bookID}}" th:text="${book.title}"></a>
+        </td>
+        <td th:text="${book.author?.firstName + ' ' + book.author?.lastName}"></td>
+        <td class="actions">
+          <a th:href="@{'/admin/books/edit/' + ${book.bookID}}" class="btn btn-edit">
+            <i class="fas fa-edit"></i> Düzenle
+          </a>
+          <a th:href="@{'/admin/books/delete/' + ${book.bookID}}"
+             class="btn btn-danger"
+             onclick="return confirm('Bu kitabı silmek istediğinize emin misiniz?')">
+            <i class="fas fa-trash"></i> Sil
+          </a>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</body>
+</html>

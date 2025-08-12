@@ -1,0 +1,74 @@
+/* admin.css */
+.admin-stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    flex: 1;
+}
+
+.stat-card h3 {
+    margin-top: 0;
+    color: #606770;
+}
+
+.stat-card p {
+    font-size: 2rem;
+    margin: 0;
+    color: #1877f2;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.admin-table th,
+.admin-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: #f2f2f2;
+    font-weight: 600;
+}
+
+.admin-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.admin-table a {
+    margin-right: 10px;
+    color: #1877f2;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.admin-table a:hover {
+    text-decoration: underline;
+}
+
+.admin-table .btn-danger {
+    color: #d93025;
+}
+
+/* Responsive tasarım için ek kurallar */
+@media (max-width: 768px) {
+    .admin-stats {
+        flex-direction: column;
+    }
+
+    .admin-table {
+        display: block;
+        overflow-x: auto;
+    }
+}

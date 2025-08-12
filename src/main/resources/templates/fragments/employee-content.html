@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" th:href="@{/css/employee.css}" />
+</head>
+<body>
+
+<div th:fragment="employee-content">
+  <h1>Çalışan Paneli</h1>
+  <p>Hoş geldiniz, <span th:text="${loggedUser.firstName}"></span>!</p>
+
+  <div class="employee-actions">
+    <a th:href="@{/employee/books}" class="btn btn-primary">
+      <i class="fas fa-book"></i> Kitap Yönetimi
+    </a>
+    <a th:href="@{/employee/borrows}" class="btn btn-secondary">
+      <i class="fas fa-exchange-alt"></i> Ödünç İşlemleri
+    </a>
+  </div>
+</div>
+
+</body>
+</html>

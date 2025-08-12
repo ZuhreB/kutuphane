@@ -6,6 +6,7 @@
     <title th:text="${pageTitle} ?: 'Library Management System'">Library Management System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/main.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
     <style>
         /* Ana CSS yapısı: Sayfa düzeni (grid) ve element konumlandırmaları */
         body {
@@ -153,11 +154,12 @@
         <a th:href="@{/logout}">Çıkış Yap</a>
     </div>
 </header>
-
 <nav id="mainNav">
-    <div th:replace="${loggedUser?.role?.toUpperCase() eq 'ADMIN'}
+    <div th:replace="${#strings.toUpperCase(loggedUser?.role) eq 'ADMIN'}
          ? ~{fragments/admin-sidebar :: admin-sidebar}
-         : ~{fragments/user-sidebar :: user-sidebar}"></div>
+         : (${#strings.toUpperCase(loggedUser?.role) eq 'EMPLOYEE'}
+            ? ~{fragments/employee-sidebar :: employee-sidebar}
+            : ~{fragments/user-sidebar :: user-sidebar})"></div>
 </nav>
 
 <article id="mainArticle">
@@ -172,9 +174,11 @@
 
 <div id="mySidenav" class="sidenav">
     <a href="javascript:void(0)" class="closebtn" onclick="toggleNav()">&times;</a>
-    <div th:replace="${loggedUser?.role?.toUpperCase() eq 'ADMIN'}
+    <div th:replace="${#strings.toUpperCase(loggedUser?.role) eq 'ADMIN'}
          ? ~{fragments/admin-sidebar :: admin-sidebar}
-         : ~{fragments/user-sidebar :: user-sidebar}"></div>
+         : (${#strings.toUpperCase(loggedUser?.role) eq 'EMPLOYEE'}
+            ? ~{fragments/employee-sidebar :: employee-sidebar}
+            : ~{fragments/user-sidebar :: user-sidebar})"></div>
 </div>
 
 <script th:src="@{/js/main.js}"></script>

@@ -37,13 +37,15 @@ public class AdminController {
             return "redirect:/login";
         }
 
-        model.addAttribute("adminName", loggedUser.getFirstName());
+        model.addAttribute("pageTitle", "Admin Paneli");
+        model.addAttribute("loggedUser", loggedUser);
         model.addAttribute("book", new Book());
         model.addAttribute("authors", authorService.findAll());
         model.addAttribute("publishers", publisherService.findAll());
         model.addAttribute("books", bookService.getAllBooks());
+        model.addAttribute("contentFragment", "fragments/admin-content :: admin-content");
 
-        return "admin-page";
+        return "layout"; // Artık layout.html şablonunu kullanıyor
     }
 
 

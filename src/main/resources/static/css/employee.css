@@ -1,0 +1,27 @@
+/* employee.css */
+.employee-actions {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.employee-actions .btn {
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary {
+    background-color: #2c7be5;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Özel çalışan paneli stilleri */
