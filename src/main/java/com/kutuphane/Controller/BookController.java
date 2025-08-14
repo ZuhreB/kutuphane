@@ -81,7 +81,7 @@ public class BookController {
         model.addAttribute("pageTitle", "Kitap Yönetimi");
         model.addAttribute("books", bookService.getAllBooks()); // Tüm kitapları getir
         model.addAttribute("loggedUser", loggedUser);
-        model.addAttribute("contentFragmentName", "fragments/lend-book-form.html :: list-books-content"); // list-books.html fragment'ını kullan
+        model.addAttribute("contentFragmentName", "fragments/list-books-content.html :: list-books-content"); // list-books.html fragment'ını kullan
 
         return "layout"; // layout.html'i render et
     }

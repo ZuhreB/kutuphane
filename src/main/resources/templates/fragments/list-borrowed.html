@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="contentFragment">
+  <h2>Ödünç Verilmiş Kitaplar</h2>
+
+  <div th:if="${message}" class="alert" th:classappend="${messageType == 'success' ? 'alert-success' : 'alert-danger'}">
+    <span th:text="${message}"></span>
+  </div>
+
+  <table class="table">
+    <thead>
+    <tr>
+      <th>Ödünç ID</th>
+      <th>Kitap Adı</th> <th>Ödünç Tarihi</th>
+      <th>İade Tarihi</th>
+      <th>Gerçek İade Tarihi</th>
+      <th>Durum</th>
+      <th>Ceza Miktarı</th>
+      <th>Kullanıcı Adı</th> </tr>
+    </thead>
+    <tbody>
+    <tr th:each="borrowedBook : ${borrows}"> <td th:text="${borrowedBook.borrowID}"></td>
+      <td th:text="${borrowedBook.book.title}"></td> <td th:text="${borrowedBook.borrowDate}"></td>
+      <td th:text="${borrowedBook.returnDate}"></td>
+      <td th:text="${borrowedBook.actualReturnDate}"></td>
+      <td th:text="${borrowedBook.status}"></td>
+      <td th:text="${borrowedBook.fineAmount}"></td>
+      <td th:text="${borrowedBook.user.username}"></td> </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

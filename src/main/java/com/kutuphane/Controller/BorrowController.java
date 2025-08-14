@@ -5,6 +5,7 @@ import com.kutuphane.Entity.Borrow;
 import com.kutuphane.Entity.User;
 import com.kutuphane.Repository.BorrowRepository;
 import com.kutuphane.Service.BookService;
+import com.kutuphane.Service.BorrowService;
 import com.kutuphane.Service.UserService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -17,20 +18,23 @@ import java.util.Optional;
 
 
 @Controller
-@RequestMapping("/employee/borrows") // İlgili tüm endpoint'leri bu URL altında gruplayalım.
+@RequestMapping("/employee") // İlgili tüm endpoint'leri bu URL altında gruplayalım.
 public class BorrowController {
 
     private final BookService bookService;
     private final UserService userService;
     private final BorrowRepository borrowRepository;
+    private final BorrowService borrowService;
+
 
     // Constructor Injection: Bağımlılıkları yönetmenin en modern ve güvenilir yolu.
-    public BorrowController(BookService bookService, UserService userService, BorrowRepository borrowRepository) {
+    public BorrowController(BookService bookService, UserService userService, BorrowRepository borrowRepository, BorrowService borrowService) {
         this.bookService = bookService;
         this.userService = userService;
         this.borrowRepository = borrowRepository;
+        this.borrowService = borrowService;
     }
-    @GetMapping("/new")
+    @GetMapping("/borrows/new")
     public String showLendBookForm(Model model, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
         if (loggedUser == null || !"EMPLOYEE".equals(loggedUser.getRole())) {
@@ -43,7 +47,7 @@ public class BorrowController {
         return "layout";
     }
 
-    @PostMapping("/create")
+    @PostMapping("/borrows/create")
     public String createBorrow(@RequestParam("username") String username,
                                @RequestParam("bookTitle") String bookTitle,
                                HttpSession session,
@@ -75,4 +79,18 @@ public class BorrowController {
         return "layout";
     }
 
+    @GetMapping("/borrowed")
+    public String listUser(Model model, HttpSession session) {
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole().toUpperCase()) && !"ADMIN".equals(loggedUser.getRole().toUpperCase()))) {
+            return "redirect:/login";
+        }
+        System.out.println("hey");
+        model.addAttribute("pageTitle", "Kütüphane Üyeleri");
+        model.addAttribute("borrowedBooks", borrowService.getBorrowedBooks());
+        model.addAttribute("loggedUser", loggedUser);
+        model.addAttribute("contentFragmentName", "fragments/list-borrowed.html :: list-borrowed"); // list-books.html fragment'ını kullan
+
+        return "layout";
+    }
 }
