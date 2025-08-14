@@ -3,13 +3,13 @@
 <body>
 
 <div th:fragment="employee-sidebar">
-    <a th:href="@{/employee/page}"><i class="fas fa-tachometer-alt"></i> Panel</a>
-    <a th:href="@{/employee/books}"><i class="fas fa-book"></i> Kitaplar</a>
-    <a th:href="@{/employee/books/add}"><i class="fa-solid fa-plus"></i> Kitap Ekle</a>
-    <a th:href="@{/employee/borrows/new}"><i class="fa-regular fa-book-arrow-right"></i> Ödünç Ver</a>
-    <a th:href="@{/employee/borrowed}"><i class="fas fa-exchange-alt"></i> Ödünçler</a>
-    <a th:href="@{/employee/members}"><i class="fas fa-users"></i> Üyeler</a>
-    <a th:href="@{/employee/members/add}"><i class="fa-solid fa-user-plus"></i> Üye Ekle</a>
+    <a href="#" data-fragment-url="/employee/fragments/panel"><i class="fas fa-tachometer-alt"></i> Panel</a>
+    <a href="#" data-fragment-url="/employee/fragments/books"><i class="fas fa-book"></i> Kitaplar</a>
+    <a href="#" data-fragment-url="/employee/fragments/books/add"><i class="fa-solid fa-plus"></i> Kitap Ekle</a>
+    <a href="#" data-fragment-url="/employee/fragments/borrows/new"><i class="fa-regular fa-book-arrow-right"></i> Ödünç Ver</a>
+    <a href="#" data-fragment-url="/employee/fragments/borrowed"><i class="fas fa-exchange-alt"></i> Ödünçler</a>
+    <a href="#" data-fragment-url="/employee/fragments/members"><i class="fas fa-users"></i> Üyeler</a>
+    <a href="#" data-fragment-url="/employee/fragments/members/add"><i class="fa-solid fa-user-plus"></i> Üye Ekle</a>
 </div>
 </body>
 </html>
