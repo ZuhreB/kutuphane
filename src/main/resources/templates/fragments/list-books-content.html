@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="contentFragment">
+    <h2>Kitap Listesi</h2>
+
+    <div th:if="${message}" class="alert" th:classappend="${messageType == 'success' ? 'alert-success' : 'alert-danger'}">
+        <span th:text="${message}"></span>
+    </div>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Başlık</th>
+            <th>Yazar</th>
+            <th>Yayıncı</th>
+            <th>ISBN</th>
+            <th>Yayın Yılı</th>
+            <th>Toplam Kopya</th>
+            <th>Mevcut Kopya</th>
+            <th>İşlemler</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="book : ${books}">
+            <td th:text="${book.bookID}"></td>
+            <td th:text="${book.title}"></td>
+            <td th:text="${book.author?.firstName + ' ' + book.author?.lastName}"></td>
+            <td th:text="${book.publisher?.publisherName}"></td>
+            <td th:text="${book.isbn}"></td>
+            <td th:text="${book.publicationYear}"></td>
+            <td th:text="${book.totalCopies}"></td>
+            <td th:text="${book.availableCopies}"></td>
+            <td>
+                <form th:action="@{/employee/books/delete/{id}(id=${book.bookID})}" method="post" style="display:inline;" onsubmit="return confirm('Bu kitabı silmek istediğinizden emin misiniz?');">
+                    <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

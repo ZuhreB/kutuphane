@@ -44,15 +44,14 @@ public class EmployeeController {
         model.addAttribute("authors", authorService.findAll());
         model.addAttribute("publishers", publisherService.findAll());
         model.addAttribute("books", bookService.getAllBooks());
-        model.addAttribute("contentFragment", "fragments/employee-content.html :: employee-content.html");
+        model.addAttribute("contentFragment", "fragments/main-content.html :: main-content.html");
 
-        return "layout"; // Artık layout.html şablonunu kullanıyor
+        return "layout";
     }
     @GetMapping("/employee/members/add")
     public String showAddMemberForm(Model model, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
 
-        System.out.println("girdim de ...");
         if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole()) && !"ADMIN".equals(loggedUser.getRole()))) {
             return "redirect:/login";
         }

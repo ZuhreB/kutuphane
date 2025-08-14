@@ -3,16 +3,13 @@
 <body>
 
 <div th:fragment="employee-sidebar">
-    <a href="/employee/page"><i class="fas fa-tachometer-alt"></i> Panel</a>
-    <a href="/employee/books"><i class="fas fa-book"></i> Kitaplar</a>
-    <a href="/employee/borrowed"><i class="fas fa-exchange-alt"></i> Ödünçler</a>
-    <a href="/employee/members"><i class="fas fa-users"></i> Üyeler</a>
-    <a href="/employee/books/add"><i class="fa-solid fa-plus"></i> Kitap Ekle</a>
-    <a href="/employee/books/delete"><i class="fa-solid fa-trash"></i> Kitap Sil</a>
-    <a href="/employee/books/borrows"><i class="fa-solid fa-book-arrow-right"></i> Ödünç Ver</a>
-    <a href="/employee/members/add"><i class="fa-solid fa-user-plus"></i> Üye Ekle</a> </div>
-
+    <a th:href="@{/employee/page}"><i class="fas fa-tachometer-alt"></i> Panel</a>
+    <a th:href="@{/employee/books}"><i class="fas fa-book"></i> Kitaplar</a>
+    <a th:href="@{/employee/books/add}"><i class="fa-solid fa-plus"></i> Kitap Ekle</a>
+    <a th:href="@{/employee/borrows/new}"><i class="fa-regular fa-book-arrow-right"></i> Ödünç Ver</a>
+    <a th:href="@{/employee/borrowed}"><i class="fas fa-exchange-alt"></i> Ödünçler</a>
+    <a th:href="@{/employee/members}"><i class="fas fa-users"></i> Üyeler</a>
+    <a th:href="@{/employee/members/add}"><i class="fa-solid fa-user-plus"></i> Üye Ekle</a>
 </div>
-
 </body>
 </html>

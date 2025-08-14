@@ -49,22 +49,4 @@ public class AdminController {
     }
 
 
-
-    @PostMapping("/admin/books/delete/{bookID}")
-    public String deleteBook(@PathVariable Long bookID, RedirectAttributes redirectAttributes, HttpSession session) {
-        User loggedUser = (User) session.getAttribute("loggedUser");
-        if (loggedUser == null || !"ADMIN".equals(loggedUser.getRole())) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Access Denied.");
-            return "redirect:/login";
-        }
-
-        try {
-            bookService.deleteBook(bookID);
-            redirectAttributes.addFlashAttribute("successMessage", "Book deleted successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error deleting book: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return "redirect:/admin/page";
-    }
 }

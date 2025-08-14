@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Bu fragment, layout.html'in ortasında gösterilecek olan ödünç verme formunu içerir. -->
+<div th:fragment="contentFragment">
+    <h2 th:text="${pageTitle}">Ödünç Kitap Ver</h2>
+    <hr>
+
+    <!-- Controller'dan gelen başarı veya hata mesajlarını göstermek için -->
+    <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+    <!-- Form, bilgileri /employee/borrows/create adresine POST metodu ile gönderir -->
+    <form th:action="@{/employee/borrows/create}" method="post" class="styled-form">
+        <div class="form-group">
+            <label for="username">Kullanıcı Adı:</label>
+            <input type="text" id="username" name="username" class="form-control" placeholder="Ödünç alacak üyenin kullanıcı adı" required>
+        </div>
+
+        <div class="form-group">
+            <label for="bookTitle">Kitap Başlığı:</label>
+            <input type="text" id="bookTitle" name="bookTitle" class="form-control" placeholder="Ödünç verilecek kitabın tam başlığı" required>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Ödünç Ver</button>
+        </div>
+    </form>
+
+    <!-- Bu forma özel stiller. Genel stiller main.css'te olmalı. -->
+    <style>
+        .styled-form {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .styled-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .styled-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+        .styled-form .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .styled-form .form-actions {
+            text-align: right;
+            margin-top: 2rem;
+        }
+    </style>
+</div>
+
+</body>
+</html>

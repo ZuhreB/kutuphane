@@ -53,6 +53,10 @@ public class Book {
     @Column(name ="Topic",nullable=true)
     private String topic;
 
+    public Long getBookID() {
+        return bookID;
+    }
+
     public LocalDate getExpectedReturnDate() {
         return expectedReturnDate;
     }

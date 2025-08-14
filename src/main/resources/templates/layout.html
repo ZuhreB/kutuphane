@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/main.css}" />
     <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <link rel="stylesheet" th:href="@{/css/employee.css}" />
     <style>
         /* Ana CSS yapısı: Sayfa düzeni (grid) ve element konumlandırmaları */
         body {
@@ -163,9 +164,14 @@
 </nav>
 
 <article id="mainArticle">
-    <div th:replace="~{fragments/member-registration :: contentFragment}"></div>
     <div th:replace="~{fragments/main-content :: contentFragment}"></div>
-</article>
+    <div th:replace="~{fragments/list-books :: contentFragment}"></div>
+    <div th:replace="~{fragments/add-book-content :: contentFragment}"></div>
+    <div th:replace="~{fragments/lend-book-form :: contentFragment}"></div>
+    <div th:replace="~{fragments/list-borrowed :: contentFragment}"></div>
+    <div th:replace="~{fragments/list-user :: contentFragment}"></div>
+    <div th:replace="~{fragments/member-registration :: contentFragment}"></div>
+    </article>
 
 <footer id="pageFooter">
     &copy; 2025 Kütüphane Yönetim Sistemi. Tüm hakları saklıdır.

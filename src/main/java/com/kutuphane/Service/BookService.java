@@ -6,8 +6,8 @@ import com.kutuphane.Entity.User;
 import com.kutuphane.Repository.BookRepository;
 import com.kutuphane.Repository.BorrowRepository;
 import com.kutuphane.Repository.UserRepository;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+// It's better to use Spring's Transactional annotation for better integration.
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,7 +21,8 @@ public class BookService {
     private final BookRepository bookRepository;
     private final BorrowRepository borrowRepository;
     private final UserRepository userRepository;
-    @Autowired
+
+    // @Autowired is redundant on a single constructor in modern Spring versions.
     public BookService(BookRepository bookRepository, BorrowRepository borrowRepository, UserRepository userRepository) {
         this.bookRepository = bookRepository;
         this.borrowRepository = borrowRepository;
@@ -75,14 +76,13 @@ public class BookService {
                 .orElseThrow(() -> new IllegalStateException("Kullanıcı bulunamadı!"));
 
         // Update book availability
-        book.setAvailableCopies(book.getAvailableCopies() - 1);
-        bookRepository.save(book);
+        book.setAvailableCopies(book.getAvailableCopies() - 1); // This change will be saved automatically on transaction commit.
 
         Borrow borrow = new Borrow();
         borrow.setBook(book);
         borrow.setUser(user);
         borrow.setBorrowDate(LocalDateTime.now());
-        borrow.setReturnDate(LocalDateTime.now().plusDays(14));
+        borrow.setReturnDate(LocalDateTime.now().plusDays(14)); // 14-day borrow period
         borrow.setStatus("BORROWED");
         borrowRepository.save(borrow);
     }
@@ -95,8 +95,7 @@ public class BookService {
     public void deleteBook(Long id){
         bookRepository.deleteById(id);
     }
-    public List<Book> findById(Long bookid){
-        return bookRepository.findAll();
-
-    }
+    // CRITICAL BUG: The method 'findById' was removed because it was incorrectly
+    // returning all books instead of one. The 'getBookById(id)' method
+    // already provides the correct functionality.
 }
