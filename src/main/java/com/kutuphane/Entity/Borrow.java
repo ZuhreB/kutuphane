@@ -22,12 +22,12 @@ public class Borrow {
     // bir kullanıcı birden fazla kitap alabildiği için
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "UserID", nullable = false)
-    private User user;
+    public User user;
 
     // bir kitap birden fazla kez alına bileceği için çünkü tek kopyası olmak zorunda değil
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "BookID", nullable = false)
-    private Book book;
+    public Book book;
 
     @Column(name = "BorrowDate", nullable = false)
     private LocalDateTime borrowDate;

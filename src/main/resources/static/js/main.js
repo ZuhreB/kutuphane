@@ -21,9 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     window.toggleNav = toggleNav; // HTML içinde onclick="toggleNav()" kullanılabilmesi için
-
-    // Sidebar linklerine tıklama dinleyicisi ekle
-    // Hem ana navigasyondaki hem de mobil menüdeki linkleri seçiyoruz
+// side bar tıklamasında farkedici dinleme şeysi
     const sidebarLinks = document.querySelectorAll('#mainNav a[data-fragment-url], #mySidenav a[data-fragment-url]');
 
     sidebarLinks.forEach(link => {
@@ -34,10 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Tüm aktif linklerin 'active' sınıfını kaldır
             sidebarLinks.forEach(item => item.classList.remove('active'));
-            // Tıklanan linke 'active' sınıfını ekle (CSS ile stil vermek için)
+            // Tıklanan linke 'active' sınıfını ekle
             link.classList.add('active');
 
-            // Mobil menü açıksa kapat
             if (sidenav && sidenav.style.width === "250px") {
                 toggleNav();
             }
@@ -51,12 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const htmlContent = await response.text();
                     mainArticle.innerHTML = htmlContent; // mainArticle içeriğini güncelle
 
-                    // Yüklenen fragment içindeki scriptleri çalıştır (ÇOK ÖNEMLİ!)
+                    // Yüklenen fragment içindeki scriptleri çalıştırcak bu bölüm
                     executeScriptsInElement(mainArticle);
 
-                    // Fragment yüklendikten sonra arama formu gibi belirli elementlerin tekrar dinleyiciye bağlanması gerekebilir.
-                    // Bu, her fragment'ta dinamik olarak eklenen/çıkarılan elementler için önemlidir.
-                    // Örneğin, arama formu sadece bazı fragment'larda varsa, o fragment yüklendiğinde listener'ı tekrar bağlamalıyız.
+                    // Fragment yüklendikten sonra arama formu gibi belirli elementlerin tekrar dinleyiciye bağlanması gerekirse
+                    //her fragmentta dinamik olarak eklenen yada çıkarılan elementler için
+                    // mesela arama formu sadece bazı fragmentlarda varsa o fragment yüklendiğinde listenerı tekrar bağlamalıyım
                     attachSearchFormListener();
 
                 } else {
@@ -90,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Arama formu dinleyicisini bir fonksiyona sarıyoruz
+    // Arama formu dinleyicisini bir fonksiyona koyduk
     // Böylece dinamik olarak yüklenen fragment'lar içinde arama formu varsa,
     // o form tekrar dinleyiciye bağlanabilir.
     function attachSearchFormListener() {
@@ -100,10 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const searchButton = document.getElementById('search-button');
         const resultsContainer = document.getElementById('search-results-container');
 
-        // Önceki dinleyiciyi kaldırmak genellikle iyi bir pratiktir,
-        // ancak formun her yüklenişinde ID'si benzersiz olacağından veya
-        // mevcut dinleyiciyi sadece bir kez eklediğimizden burada gerekli olmayabilir.
-        // Basitlik adına şu an için tekrar ekliyoruz.
 
         if (searchForm && !searchForm.hasAttribute('data-listener-attached')) { // Listener'ın zaten eklenip eklenmediğini kontrol et
             searchForm.addEventListener('submit', async (event) => {
@@ -141,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // renderResults fonksiyonunu güncelledik (resultsContainer parametresi ekledik)
     function renderResults(books, container) {
         if (!books || books.length === 0) {
             container.innerHTML = `<div class="no-results">Aramanızla eşleşen kitap bulunamadı.</div>`;

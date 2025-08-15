@@ -59,52 +59,39 @@
   </div>
 
   <script th:inline="javascript">
-    // Ensure the script runs after the DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
-      const registerMemberForm = document.getElementById('register-member-form');
-      const messageBox = document.getElementById('message-box');
+    document.getElementById('register-member-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-      if (registerMemberForm) {
-        registerMemberForm.addEventListener('submit', async (event) => {
-          event.preventDefault();
+    const formData = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        username: document.getElementById('username').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value
+    };
 
-          messageBox.style.display = 'none';
-          messageBox.textContent = '';
-          messageBox.classList.remove('success', 'error');
-
-          const formData = new FormData(registerMemberForm);
-          const data = Object.fromEntries(formData.entries());
-
-          try {
-            const response = await fetch('/api/members/register', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(data)
-            });
-
-            if (response.ok) {
-              const newUser = await response.json();
-              displayMessage(`Başarılı! ${newUser.firstName} adlı üye kaydedildi.`, 'success');
-              registerMemberForm.reset();
-            } else {
-              const errorMessage = await response.text();
-              displayMessage(errorMessage || 'Bilinmeyen bir hata oluştu.', 'error');
-            }
-          } catch (error) {
-            displayMessage('Sunucuya bağlanılamadı. Lütfen daha sonra tekrar deneyin.', 'error');
-            console.error('Fetch Error:', error);
-          }
+    try {
+        const response = await fetch('/api/members/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
         });
-      }
 
-      function displayMessage(message, type) {
-        messageBox.textContent = message;
-        messageBox.className = `message ${type}`;
-        messageBox.style.display = 'block';
-      }
-    });
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Kayıt başarısız');
+        }
+
+        alert('Üye başarıyla kaydedildi: ' + result.user.username);
+        e.target.reset();
+    } catch (error) {
+        alert('Hata: ' + error.message);
+        console.error('Hata:', error);
+    }
+});
   </script>
 </div>
 

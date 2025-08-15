@@ -14,6 +14,6 @@ public interface BorrowRepository extends JpaRepository<Borrow, Long> {
     // Belirli bir kitap için, henüz iade edilmemiş (returnDate IS NULL) ve
     // beklenen iade tarihine göre sıralanmış ödünç alma kayıtlarını bulur.
     List<Borrow> findByBookBookIDAndActualReturnDateIsNullOrderByReturnDateAsc(Long bookId);
-    @Query("SELECT b.borrowID, u.username AS UserName, bk.title AS BookTitle, b.borrowDate, b.returnDate, b.actualReturnDate, b.status, b.fineAmount FROM Borrow b JOIN b.user u JOIN b.book bk")
-    List<Book>findBorrowedBooks();
+    @Query("SELECT b FROM Borrow b JOIN FETCH b.book JOIN FETCH b.user WHERE b.status = 'BORROWED'")
+    List<Borrow> findBorrowedBooks();
     }

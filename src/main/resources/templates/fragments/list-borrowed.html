@@ -21,13 +21,13 @@
       <th>Kullanıcı Adı</th> </tr>
     </thead>
     <tbody>
-    <tr th:each="borrowedBook : ${borrows}"> <td th:text="${borrowedBook.borrowID}"></td>
-      <td th:text="${borrowedBook.book.title}"></td> <td th:text="${borrowedBook.borrowDate}"></td>
-      <td th:text="${borrowedBook.returnDate}"></td>
-      <td th:text="${borrowedBook.actualReturnDate}"></td>
-      <td th:text="${borrowedBook.status}"></td>
-      <td th:text="${borrowedBook.fineAmount}"></td>
-      <td th:text="${borrowedBook.user.username}"></td> </tr>
+    <tr th:each="borrows : ${borrows}"> <td th:text="${borrows.borrowID}"></td>
+      <td th:text="${borrows.book.title}"></td> <td th:text="${borrows.borrowDate}"></td>
+      <td th:text="${borrows.returnDate}"></td>
+      <td th:text="${borrows.actualReturnDate}"></td>
+      <td th:text="${borrows.status}"></td>
+      <td th:text="${borrows.fineAmount}"></td>
+      <td th:text="${borrows.user.username}"></td> </tr>
     </tbody>
   </table>
 </div>

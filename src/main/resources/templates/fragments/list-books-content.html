@@ -5,8 +5,8 @@
 <div th:fragment="contentFragment">
     <h2>Kitap Listesi</h2>
 
-    <div th:if="${message}" class="alert" th:classappend="${messageType == 'success' ? 'alert-success' : 'alert-danger'}">
-        <span th:text="${message}"></span>
+    <div id="message-container" class="alert" style="display:none;">
+        <span id="message-text"></span>
     </div>
 
     <table class="table">
@@ -34,14 +34,82 @@
             <td th:text="${book.totalCopies}"></td>
             <td th:text="${book.availableCopies}"></td>
             <td>
-                <form th:action="@{/employee/books/delete/{id}(id=${book.bookID})}" method="post" style="display:inline;" onsubmit="return confirm('Bu kitabı silmek istediğinizden emin misiniz?');">
-                    <button type="submit" class="btn btn-danger btn-sm">Sil</button>
-                </form>
+                <button type="button"
+                        class="btn btn-danger btn-sm delete-book-btn"
+                        th:data-book-id="${book.bookID}">
+                    Sil
+                </button>
             </td>
         </tr>
         </tbody>
     </table>
 </div>
+<div>
+    <script th:inline="javascript">
+        // Define a function that sets up the event listeners
+        function initializeBookDelete() {
+            console.log("initializeBookDelete fonksiyonu list-books-content.html'den çağrıldı!"); // Bu logu kontrol edin
+            const deleteButtons = document.querySelectorAll('.delete-book-btn');
+            const messageContainer = document.getElementById('message-container');
+            const messageText = document.getElementById('message-text');
 
+            deleteButtons.forEach(button => {
+                // Ensure the listener is added only once to avoid multiple firings
+                if (!button.dataset.listenerAttached) { // Tekrar dinleyici eklenmemesi için
+                    button.addEventListener('click', async (e) => {
+                        const bookId = e.currentTarget.dataset.bookId;
+
+                        if (!bookId) {
+                            console.error('Book ID silme işlemi için bulunamadı.');
+                            return;
+                        }
+                        console.log("Kitap ID:", bookId, "silmeye çalışılıyor."); // Bu logu kontrol edin
+
+                        const confirmDelete = confirm('Bu kitabı silmek istediğinizden emin misiniz?');
+                        if (!confirmDelete) {
+                            return;
+                        }
+
+                        try {
+                            const response = await fetch(`/employee/books/delete/${bookId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            const data = await response.json();
+
+                            messageContainer.style.display = 'block';
+                            messageContainer.classList.remove('alert-success', 'alert-danger');
+
+                            if (response.ok) {
+                                messageContainer.classList.add('alert-success');
+                                messageText.textContent = data.message;
+                                e.currentTarget.closest('tr').remove();
+                                setTimeout(() => {
+                                     window.location.reload();
+                                 }, 1500);
+                            } else {
+                                messageContainer.classList.add('alert-danger');
+                                messageText.textContent = data.message || 'Kitap silinirken bir hata oluştu.';
+                            }
+                        } catch (error) {
+                            console.error('Fetch işlemi sırasında hata:', error);
+                            messageContainer.style.display = 'block';
+                            messageContainer.classList.remove('alert-success');
+                            messageContainer.classList.add('alert-danger');
+                            messageText.textContent = 'Ağ hatası veya sunucuya ulaşılamıyor.';
+                        }
+                    });
+                    button.dataset.listenerAttached = 'true'; // Dinleyici eklendiğini işaretle
+                }
+            });
+        }
+
+        // Script yüklendiğinde/çalıştığında fonksiyonu çağır
+        initializeBookDelete();
+    </script>
+</div>
 </body>
 </html>

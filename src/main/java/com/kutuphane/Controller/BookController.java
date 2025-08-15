@@ -9,12 +9,16 @@ import com.kutuphane.Service.BookService;
 import com.kutuphane.Service.PublisherService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller; // Change to @Controller
 import org.springframework.ui.Model; // Import Model
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller // Change this from @RestController to @Controller
@@ -32,76 +36,30 @@ public class BookController {
         this.publisherService = publisherService;
     }
 
-    @GetMapping("/add")
-    public String showAddBookForm(Model model, HttpSession session) {
+    @DeleteMapping("/delete/{id}") // HTTP DELETE metodunu kullanıyoruz
+    @ResponseBody // Metodun döndürdüğü Map'i JSON olarak HTTP yanıt gövdesine yazar
+    public ResponseEntity<Map<String, String>> deleteBook(@PathVariable("id") Long id, HttpSession session) {
         User loggedUser = (User) session.getAttribute("loggedUser");
-        if (loggedUser == null || !"EMPLOYEE".equals(loggedUser.getRole().toUpperCase())) {
-            return "redirect:/login"; // Redirect if not logged in or not an employee
-        }
 
-        model.addAttribute("pageTitle", "Kitap Ekle");
-        model.addAttribute("book", new Book()); // Create a new Book object for the form
-        model.addAttribute("authors", authorService.findAll()); // Get all authors
-        model.addAttribute("publishers", publisherService.findAll()); // Get all publishers
-        model.addAttribute("loggedUser", loggedUser); // Pass logged user to layout
-        model.addAttribute("contentFragment", "fragments/add-book-content.html :: add-book-content");
-
-        return "layout";
-    }
-
-    @PostMapping("/add")
-    public String addBook(@ModelAttribute("book") Book book, Model model, HttpSession session) {
-        User loggedUser = (User) session.getAttribute("loggedUser");
-        if (loggedUser == null || !"EMPLOYEE".equals(loggedUser.getRole().toUpperCase())) {
-            return "redirect:/login";
-        }
-
-        book.setAvailableCopies(book.getTotalCopies());
-
-        book.setAddedDate(LocalDateTime.now());
-
-        Author author = authorService.getAuthorById(book.getAuthor().getAuthorID());
-        Publisher publisher = publisherService.getPublisherById(book.getPublisher().getPublisherID());
-
-        book.setAuthor(author);
-        book.setPublisher(publisher);
-
-        bookService.saveBook(book); // Save the book
-
-        return "redirect:/employee/books"; // Assuming you have a /employee/books endpoint
-    }
-
-    @GetMapping
-    public String listBooks(Model model, HttpSession session) {
-        User loggedUser = (User) session.getAttribute("loggedUser");
-        if (loggedUser == null || !"EMPLOYEE".equals(loggedUser.getRole().toUpperCase())) {
-            return "redirect:/login";
-        }
-
-        model.addAttribute("pageTitle", "Kitap Yönetimi");
-        model.addAttribute("books", bookService.getAllBooks()); // Tüm kitapları getir
-        model.addAttribute("loggedUser", loggedUser);
-        model.addAttribute("contentFragmentName", "fragments/list-books-content.html :: list-books-content"); // list-books.html fragment'ını kullan
-
-        return "layout"; // layout.html'i render et
-    }
-
-    @PostMapping("/delete/{id}")
-    public String deleteBook(@PathVariable("id") Long id, HttpSession session, RedirectAttributes redirectAttributes) {
-        User loggedUser = (User) session.getAttribute("loggedUser");
-        if (loggedUser == null || !"EMPLOYEE".equals(loggedUser.getRole().toUpperCase())) {
-            return "redirect:/login";
+        System.out.println("silcemmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm");
+        if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole().toUpperCase()) && !"ADMIN".equals(loggedUser.getRole().toUpperCase()))) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Yetkisiz erişim. Bu işlemi gerçekleştirmek için yetkiniz yok.");
+            response.put("messageType", "danger");
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
         }
 
         try {
             bookService.deleteBook(id);
-            redirectAttributes.addFlashAttribute("message", "Kitap başarıyla silindi.");
-            redirectAttributes.addFlashAttribute("messageType", "success");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Kitap başarıyla silindi.");
+            response.put("messageType", "success");
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("message", "Kitap silinirken bir hata oluştu: " + e.getMessage());
-            redirectAttributes.addFlashAttribute("messageType", "danger");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Kitap silinirken bir hata oluştu: " + e.getMessage());
+            response.put("messageType", "danger");
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return "layout";
     }
     }
