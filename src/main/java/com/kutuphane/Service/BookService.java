@@ -21,6 +21,7 @@ public class BookService {
     private final BookRepository bookRepository;
     private final BorrowRepository borrowRepository;
     private final UserRepository userRepository;
+    private BorrowService borrowService;
 
     // @Autowired is redundant on a single constructor in modern Spring versions.
     public BookService(BookRepository bookRepository, BorrowRepository borrowRepository, UserRepository userRepository) {
@@ -86,16 +87,14 @@ public class BookService {
         borrow.setStatus("BORROWED");
         borrowRepository.save(borrow);
     }
-    public void saveBook(Book book){
-        bookRepository.save(book);
+    public Book saveBook(Book book){
+        bookRepository.save(book) ;
+        return book;
     }
-    public void deleteBook(Book book){
-        bookRepository.delete(book);
-    }
-    public void deleteBook(Long id){
+    public void deleteBook(Long id) {
+        Book bookToDelete = bookRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Silinecek kitap bulunamadı."));
+
         bookRepository.deleteById(id);
     }
-    // CRITICAL BUG: The method 'findById' was removed because it was incorrectly
-    // returning all books instead of one. The 'getBookById(id)' method
-    // already provides the correct functionality.
 }

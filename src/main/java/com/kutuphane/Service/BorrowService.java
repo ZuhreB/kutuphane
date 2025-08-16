@@ -52,4 +52,5 @@ public class BorrowService {
     public List<Borrow> getBorrowedBooks() {
         return borrowRepository.findBorrowedBooks();
     }
+
 }

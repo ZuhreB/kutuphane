@@ -43,27 +43,29 @@
         </tr>
         </tbody>
     </table>
-</div>
-<div>
     <script th:inline="javascript">
-        // Define a function that sets up the event listeners
         function initializeBookDelete() {
-            console.log("initializeBookDelete fonksiyonu list-books-content.html'den çağrıldı!"); // Bu logu kontrol edin
+            console.log("initializeBookDelete fonksiyonu list-books-content.html'den çağrıldı!");
             const deleteButtons = document.querySelectorAll('.delete-book-btn');
             const messageContainer = document.getElementById('message-container');
             const messageText = document.getElementById('message-text');
 
             deleteButtons.forEach(button => {
-                // Ensure the listener is added only once to avoid multiple firings
-                if (!button.dataset.listenerAttached) { // Tekrar dinleyici eklenmemesi için
+                if (!button.dataset.listenerAttached) {
                     button.addEventListener('click', async (e) => {
+                        // 🛠️ BURADAKİ YENİ KONTROL: e.currentTarget'ın geçerli bir element olduğundan emin olun
+                        if (!e.currentTarget || !(e.currentTarget instanceof Element)) {
+                            console.error('Hata: Olay hedefi (e.currentTarget) geçersiz veya null. Silme işlemi iptal edildi.');
+                            return; // İşlemi durdur
+                        }
+
                         const bookId = e.currentTarget.dataset.bookId;
 
                         if (!bookId) {
                             console.error('Book ID silme işlemi için bulunamadı.');
                             return;
                         }
-                        console.log("Kitap ID:", bookId, "silmeye çalışılıyor."); // Bu logu kontrol edin
+                        console.log("Kitap ID:", bookId, "silmeye çalışılıyor.");
 
                         const confirmDelete = confirm('Bu kitabı silmek istediğinizden emin misiniz?');
                         if (!confirmDelete) {
@@ -86,7 +88,15 @@
                             if (response.ok) {
                                 messageContainer.classList.add('alert-success');
                                 messageText.textContent = data.message;
-                                e.currentTarget.closest('tr').remove();
+
+                                // 🛠️ BURADAKİ YENİ KONTROL: Satırı kaldırmadan önce varlığını kontrol edin
+                                const rowToRemove = e.currentTarget.closest('tr');
+                                if (rowToRemove) {
+                                    rowToRemove.remove();
+                                } else {
+                                    console.warn("Uyarı: Silinecek tablo satırı DOM'da bulunamadı. Sayfa yenilemesi gerçekleşecek.");
+                                }
+
                                 setTimeout(() => {
                                      window.location.reload();
                                  }, 1500);
@@ -102,12 +112,11 @@
                             messageText.textContent = 'Ağ hatası veya sunucuya ulaşılamıyor.';
                         }
                     });
-                    button.dataset.listenerAttached = 'true'; // Dinleyici eklendiğini işaretle
+                    button.dataset.listenerAttached = 'true';
                 }
             });
         }
 
-        // Script yüklendiğinde/çalıştığında fonksiyonu çağır
         initializeBookDelete();
     </script>
 </div>

@@ -14,5 +14,7 @@ spring:
     #database-platform: org.hibernate.dialect.SQLServerDialect
     open-in-view: false
 
+
+
   thymeleaf:
     cache: false

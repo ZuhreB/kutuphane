@@ -1,8 +1,6 @@
 package com.kutuphane.Controller;
 
-import com.kutuphane.Entity.Book;
-import com.kutuphane.Entity.Borrow;
-import com.kutuphane.Entity.User;
+import com.kutuphane.Entity.*;
 import com.kutuphane.Service.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +29,7 @@ public class EmployeeController {
     private PublisherService publisherService;
 
     @Autowired
-    private UserService  userService;
+    private UserService userService;
     @Autowired
     private BorrowService borrowService;
 
@@ -103,7 +101,7 @@ public class EmployeeController {
             return "redirect:/login";
         }
 
-         model.addAttribute("borrows", borrowService.getBorrowedBooks());
+        model.addAttribute("borrows", borrowService.getBorrowedBooks());
         return "fragments/list-borrowed :: contentFragment";
     }
 
@@ -167,6 +165,7 @@ public class EmployeeController {
         System.out.println("aesrdyugoıjpkjhu.........................");
         return "fragments/lend-book-form :: contentFragment";
     }
+
     @PostMapping("/api/borrows/create")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> createBorrow(
@@ -199,6 +198,39 @@ public class EmployeeController {
             response.put("success", false);
             response.put("message", e.getMessage());
             return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    // =====================================================================================
+    @PostMapping("/api/books/add")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> addBook(@RequestBody Book book, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole()) && !"ADMIN".equals(loggedUser.getRole()))) {
+            response.put("success", false);
+            response.put("message", "Bu işlemi yapmak için yetkiniz yok.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        try {
+            // Gelen kitabın mevcut kopya sayısını toplam kopya sayısına eşitle
+            book.setAvailableCopies(book.getTotalCopies());
+            Author realAuthor = authorService.getAuthorById(book.getAuthor().getAuthorID());
+
+            // 2. Fetch the real Publisher entity.
+            Publisher realPublisher = publisherService.getPublisherById(book.getPublisher().getPublisherID());
+            book.setAuthor(realAuthor);
+            book.setPublisher(realPublisher);
+            Book savedBook = bookService.saveBook(book);
+            response.put("success", true);
+            response.put("message", "Kitap başarıyla eklendi: " + savedBook.getTitle());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Kitap eklenirken bir hata oluştu: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 }
