@@ -1,65 +1,57 @@
 package com.kutuphane.Controller;
 
-import com.kutuphane.Entity.Author;
-import com.kutuphane.Entity.Book;
-import com.kutuphane.Entity.Publisher;
 import com.kutuphane.Entity.User;
-import com.kutuphane.Service.AuthorService;
 import com.kutuphane.Service.BookService;
-import com.kutuphane.Service.PublisherService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException; // <--- Bu import'u ekleyin
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller; // Change to @Controller
-import org.springframework.ui.Model; // Import Model
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
-@Controller // Change this from @RestController to @Controller
-@RequestMapping("/employee/books") // Adjusted base request mapping
+@RestController
+@RequestMapping("/employee/books")
 public class BookController {
 
     private final BookService bookService;
-    private final AuthorService authorService; // Inject AuthorService
-    private final PublisherService publisherService; // Inject PublisherService
 
     @Autowired
-    public BookController(BookService bookService, AuthorService authorService, PublisherService publisherService) {
+    public BookController(BookService bookService) {
         this.bookService = bookService;
-        this.authorService = authorService;
-        this.publisherService = publisherService;
     }
 
-    @DeleteMapping("/delete/{id}") // HTTP DELETE metodunu kullanıyoruz
-    @ResponseBody // Metodun döndürdüğü Map'i JSON olarak HTTP yanıt gövdesine yazar
-    public ResponseEntity<Map<String, String>> deleteBook(@PathVariable("id") Long id, HttpSession session) {
-        User loggedUser = (User) session.getAttribute("loggedUser");
-
-        System.out.println("silcemmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm");
-        if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole().toUpperCase()) && !"ADMIN".equals(loggedUser.getRole().toUpperCase()))) {
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Yetkisiz erişim. Bu işlemi gerçekleştirmek için yetkiniz yok.");
-            response.put("messageType", "danger");
-            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Map<String, Object>> deleteBook(@PathVariable Long id, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        if (!isAuthorized(session)) {
+            response.put("success", false);
+            response.put("message", "Bu işlemi yapmak için yetkiniz yok.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
 
         try {
             bookService.deleteBook(id);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Kitap başarıyla silindi.");
-            response.put("messageType", "success");
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            response.put("success", true);
+            response.put("message", "Kitap başarıyla silindi (görünümden kaldırıldı)."); // <--- Mesajı güncelleyin
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            response.put("success", false);
+            response.put("message", e.getMessage()); // BookInUseException'dan gelen mesajı kullanın
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response); // 409 Conflict
         } catch (Exception e) {
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Kitap silinirken bir hata oluştu: " + e.getMessage());
-            response.put("messageType", "danger");
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            // Beklenmeyen diğer tüm hatalar
+            response.put("success", false);
+            response.put("message", "Kitap silinirken beklenmeyen bir hata oluştu: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // 500 Internal Server Error
         }
     }
+
+
+    private boolean isAuthorized(HttpSession session) {
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        return loggedUser != null && ("EMPLOYEE".equals(loggedUser.getRole()) || "ADMIN".equals(loggedUser.getRole()));
     }
+}
