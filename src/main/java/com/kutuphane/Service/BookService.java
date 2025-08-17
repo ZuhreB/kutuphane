@@ -21,7 +21,6 @@ public class BookService {
     private final BookRepository bookRepository;
     private final BorrowRepository borrowRepository;
     private final UserRepository userRepository;
-    private BorrowService borrowService;
 
     // @Autowired is redundant on a single constructor in modern Spring versions.
     public BookService(BookRepository bookRepository, BorrowRepository borrowRepository, UserRepository userRepository) {
@@ -62,8 +61,7 @@ public class BookService {
         }
         return bookRepository.findByIsbnIgnoreCase(isbn);
     }
-
-
+    
     @Transactional
     public void borrowBook(Long bookId, String username) {
         Book book = bookRepository.findById(bookId)
@@ -91,10 +89,25 @@ public class BookService {
         bookRepository.save(book) ;
         return book;
     }
-    public void deleteBook(Long id) {
-        Book bookToDelete = bookRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Silinecek kitap bulunamadı."));
 
+    @Transactional
+    public void deleteBook(Long id) {
+        // 1. Check if the book exists to provide a clear error message.
+        if (!bookRepository.existsById(id)) {
+            throw new IllegalArgumentException("Silinecek kitap bulunamadı. ID: " + id);
+        }
+
+        // 2. Check if the book is currently borrowed by anyone.
+        if (borrowRepository.existsByBook_BookIDAndStatus(id, "BORROWED")) {
+            // If it is, throw an exception to stop the deletion.
+            throw new IllegalStateException("Bu kitap şu anda bir üyede ödünç olduğu için silinemez.");
+        }
+
+        // 3. If the book is not currently borrowed, delete all its past borrow records
+        // to avoid the foreign key constraint error.
+        borrowRepository.deleteByBook_BookID(id);
+
+        // 4. Now that all references are gone, it's safe to delete the book itself.
         bookRepository.deleteById(id);
     }
 }

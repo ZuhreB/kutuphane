@@ -16,5 +16,6 @@ public interface BorrowRepository extends JpaRepository<Borrow, Long> {
     List<Borrow> findByBookBookIDAndActualReturnDateIsNullOrderByReturnDateAsc(Long bookId);
     @Query("SELECT b FROM Borrow b JOIN FETCH b.book JOIN FETCH b.user WHERE b.status = 'BORROWED'")
     List<Borrow> findBorrowedBooks();
-
+    boolean existsByBook_BookIDAndStatus(Long bookId, String status);
+    public void deleteByBook_BookID(Long id);
 }
