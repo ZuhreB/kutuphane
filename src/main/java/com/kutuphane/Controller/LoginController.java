@@ -36,6 +36,9 @@ public class LoginController {
             if("EMPLOYEE".equals(loggedUser.getRole())) {
                 return ResponseEntity.ok("/employee/page");
             }
+            if("USER".equals(loggedUser.getRole())){
+                return ResponseEntity.ok("/user/page");
+            }
             return ResponseEntity.ok("/main");
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");

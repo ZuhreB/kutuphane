@@ -45,32 +45,6 @@ public class MainController {
         return "layout";
     }
 
-    @GetMapping("/api/books/search") // Bu metot kalacak ve çalışmaya devam edecek
-    @ResponseBody
-    public ResponseEntity<List<Book>> searchBooks(@RequestParam String type, @RequestParam String query) {
-        List<Book> foundBooks;
-        switch (type.toLowerCase()) {
-            case "title":
-                foundBooks = bookRepository.findByTitleContainingIgnoreCase(query);
-                break;
-            case "author":
-                foundBooks = bookRepository.findByAuthor_FirstNameContainingIgnoreCase(query);
-                break;
-            case "isbn":
-                foundBooks = bookRepository.findByIsbnIgnoreCase(query);
-                break;
-            case "topic":
-                foundBooks = bookRepository.findByTopicContainingIgnoreCase(query);
-                break;
-            default:
-                return ResponseEntity.badRequest().build();
-        }
-
-        populateExpectedReturnDates(foundBooks);
-
-        return ResponseEntity.ok(foundBooks);
-    }
-
     private void populateExpectedReturnDates(List<Book> books) {
         if (books == null || books.isEmpty()) {
             return;
@@ -81,7 +55,7 @@ public class MainController {
 
                 if (!activeBorrows.isEmpty()) {
 
-                    System.out.println(book.getTitle()+"burdayım");
+                    System.out.println("neden burdayım");
                     book.setExpectedReturnDate(LocalDate.from(activeBorrows.get(0).getReturnDate()));
                 }
             }

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="contentFragment">
+    <h2>Ödünç Alma Geçmişim</h2>
+    <hr>
+
+    <div th:if="${borrows.isEmpty()}" class="alert alert-info">
+        Daha önce hiç kitap ödünç almadınız.
+    </div>
+
+    <table class="table table-striped table-hover" th:if="${!borrows.isEmpty()}">
+        <thead class="thead-dark">
+        <tr>
+            <th>Kitap Başlığı</th>
+            <th>Ödünç Alma Tarihi</th>
+            <th>Beklenen İade Tarihi</th>
+            <th>Gerçek İade Tarihi</th>
+            <th>Durum</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="borrow : ${borrows}">
+            <td th:text="${borrow.book.title}"></td>
+            <td th:text="${#temporals.format(borrow.borrowDate, 'dd-MM-yyyy')}"></td>
+            <td th:text="${#temporals.format(borrow.returnDate, 'dd-MM-yyyy')}"></td>
+            <td th:text="${borrow.actualReturnDate != null ? #temporals.format(borrow.actualReturnDate, 'dd-MM-yyyy') : '-'}"></td>
+            <td>
+                <span th:if="${borrow.status == 'BORROWED'}" class="badge badge-warning">Ödünç Alındı</span>
+                <span th:if="${borrow.status == 'RETURNED'}" class="badge badge-success">İade Edildi</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

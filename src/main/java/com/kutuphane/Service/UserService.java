@@ -29,7 +29,6 @@ public class UserService {
         {
             throw new RuntimeException("Bu hesap zaten var");
         }
-        user.setRole("USER");
         return userRepository.save(user);
     }
 

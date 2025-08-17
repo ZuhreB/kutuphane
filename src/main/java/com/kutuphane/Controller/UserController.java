@@ -1,82 +1,122 @@
 package com.kutuphane.Controller;
 
+import com.kutuphane.Entity.Book;
+import com.kutuphane.Entity.Borrow;
 import com.kutuphane.Entity.User;
-import com.kutuphane.Service.UserService;
+import com.kutuphane.Service.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-
-@RestController
-@RequestMapping("/api/users")
+@Controller
 public class UserController {
-
-    private final UserService userService;
-
     @Autowired
-    public UserController(UserService userService) {
+    private AuthorService authorService;
+    @Autowired
+    private PublisherService publisherService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private BorrowService borrowService;
+    @Autowired
+    private BookService bookService;
+
+    public UserController(UserService userService, BorrowService borrowService, BookService bookService) {
         this.userService = userService;
+        this.borrowService = borrowService;
+        this.bookService=bookService;
+    }
+    @GetMapping("/employee/fragments/members")
+    public String getMembersFragment(Model model, HttpSession session) {
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole()) && !"ADMIN".equals(loggedUser.getRole()))) {
+            return "redirect:/login";
+        }
+        model.addAttribute("users", userService.getAllUsers()); // Tüm kullanıcıları çek (üyeleri)
+        return "fragments/list-user :: contentFragment"; // Üye listesi için varsayılan fragment
     }
 
-    @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+    @GetMapping("/employee/fragments/members/add")
+    public String getAddMemberFragment(Model model, HttpSession session) {
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole()) && !"ADMIN".equals(loggedUser.getRole()))) {
+            return "redirect:/login";
+        }
+        model.addAttribute("loggedUser", loggedUser);
+        // Üye kayıt formu için başlangıç verileri gerekirse eklenebilir.
+        model.addAttribute("newUser", new User());
+        return "fragments/member-registration :: contentFragment";
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        Optional<User> user = userService.getUserById(id);
-        // optinala bir user geldiyse çalışçak yoksa çalışmıycak bu kıısmı
-        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-    }
+    @PostMapping("/api/members/register")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> registerMember(@RequestBody User user, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        User loggedUser = (User) session.getAttribute("loggedUser");
 
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
+        if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole()) && !"ADMIN".equals(loggedUser.getRole()))) {
+            response.put("success", false);
+            response.put("message", "Yetkisiz işlem");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
         try {
+            user.setRole("USER");
             User savedUser = userService.saveUser(user);
-            return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            // UserService'de fırlatılan hataları yakalayıp kullanıcıya anlamlı bir mesaj dönüyoruz.
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
-        }
-    }
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User savedUser = userService.saveUser(user);
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
-        Optional<User> userOptional = userService.getUserById(id);
-        if (userOptional.isPresent()) {
-            User existingUser = userOptional.get();
-            existingUser.setUsername(userDetails.getUsername());
-            existingUser.setPassword(userDetails.getPassword());
-            existingUser.setEmail(userDetails.getEmail());
-            existingUser.setFirstName(userDetails.getFirstName());
-            existingUser.setLastName(userDetails.getLastName());
-            existingUser.setRole(userDetails.getRole());
-            User updatedUser = userService.saveUser(existingUser);
-            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            response.put("success", true);
+            response.put("user", savedUser);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @GetMapping("/borrow-history")
+    public String getBorrowHistory(HttpSession session, Model model) {
+        User loggedUser = (User) session.getAttribute("loggedUser");
+
+        // Kullanıcı giriş yapmamışsa login sayfasına yönlendir
+        if (loggedUser == null) {
+            return "redirect:/login";
+        }
+
+        // Servis üzerinden kullanıcının ödünç alma geçmişini al
+        List<Borrow> userBorrows = borrowService.findBorrowHistoryByUserId(loggedUser.getUserID());
+        model.addAttribute("borrows", userBorrows);
+
+        return "fragments/borrow-history-content :: contentFragment";
     }
+
+    @GetMapping("/user/page")
+    public String showAdminPage(Model model, HttpSession session) {
+        System.out.println("user pagi iiçindeiym");
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        if (loggedUser == null || (!"USER".equals(loggedUser.getRole()))) {
+            return "redirect:/login"; // Eğer USER değilse login sayfasına yönlendir
+        }
+
+        model.addAttribute("pageTitle", "Çalışan Paneli");
+        model.addAttribute("loggedUser", loggedUser);
+        model.addAttribute("book", new Book());
+        model.addAttribute("authors", authorService.findAll());
+        model.addAttribute("publishers", publisherService.findAll());
+        model.addAttribute("books", bookService.getAllBooks());
+        return "layout";
+    }
+
+
+
+
 
 
 }

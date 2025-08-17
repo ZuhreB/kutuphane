@@ -6,6 +6,8 @@ import com.kutuphane.Entity.User;
 import com.kutuphane.Repository.BookRepository;
 import com.kutuphane.Repository.BorrowRepository;
 import com.kutuphane.Repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +53,29 @@ public class BorrowService {
 
     public List<Borrow> getBorrowedBooks() {
         return borrowRepository.findBorrowedBooks();
+    }
+    public List<Borrow> findBorrowHistoryByUserId(Long userId) {
+        return borrowRepository.findByUser_UserIDOrderByBorrowDateDesc(userId);
+    }
+
+    @Transactional
+    public void returnBook(Long borrowId) {
+        // 1. Ödünç kaydını bul, bulamazsan hata fırlat
+        Borrow borrow = borrowRepository.findById(borrowId)
+                .orElseThrow(() -> new EntityNotFoundException("Ödünç kaydı bulunamadı: " + borrowId));
+
+        // 2. Kitap zaten iade edilmişse, tekrar işlem yapmayı engelle.
+        if ("RETURNED".equals(borrow.getStatus())) {
+            throw new IllegalStateException("Bu kitap zaten iade edilmiş.");
+        }
+
+        // 3. Ödünç kaydını güncelle.
+        borrow.setStatus("RETURNED");
+        borrow.setActualReturnDate(LocalDate.now().atStartOfDay());
+
+        // 4. Kitabın stok sayısını 1 artır.
+        Book book = borrow.getBook();
+        book.setAvailableCopies(book.getAvailableCopies() + 1);
     }
 
 }

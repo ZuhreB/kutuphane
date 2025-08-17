@@ -23,8 +23,8 @@
             <th>İşlemler</th>
         </tr>
         </thead>
-        <tbody>
-        <tr th:each="book : ${books}">
+        <tbody id="books-table-body"> <!-- Add ID for easier access if needed -->
+        <tr th:each="book : ${books}" th:id="'book-row-' + ${book.bookID}">
             <td th:text="${book.bookID}"></td>
             <td th:text="${book.title}"></td>
             <td th:text="${book.author?.firstName + ' ' + book.author?.lastName}"></td>
@@ -43,81 +43,63 @@
         </tr>
         </tbody>
     </table>
+
     <script th:inline="javascript">
-        function initializeBookDelete() {
-            console.log("initializeBookDelete fonksiyonu list-books-content.html'den çağrıldı!");
-            const deleteButtons = document.querySelectorAll('.delete-book-btn');
+        // BEST PRACTICE: Use a single event listener on the table (Event Delegation).
+        // This is more efficient and works even if new rows are added dynamically.
+        document.querySelector('.table').addEventListener('click', async (event) => {
+            // Only proceed if a delete button was clicked
+            if (!event.target.classList.contains('delete-book-btn')) {
+                return;
+            }
+
+            const button = event.target;
+            const bookId = button.dataset.bookId;
             const messageContainer = document.getElementById('message-container');
             const messageText = document.getElementById('message-text');
 
-            deleteButtons.forEach(button => {
-                if (!button.dataset.listenerAttached) {
-                    button.addEventListener('click', async (e) => {
-                        // 🛠️ BURADAKİ YENİ KONTROL: e.currentTarget'ın geçerli bir element olduğundan emin olun
-                        if (!e.currentTarget || !(e.currentTarget instanceof Element)) {
-                            console.error('Hata: Olay hedefi (e.currentTarget) geçersiz veya null. Silme işlemi iptal edildi.');
-                            return; // İşlemi durdur
-                        }
+            if (!bookId) {
+                console.error('Book ID could not be found on the button.');
+                return;
+            }
 
-                        const bookId = e.currentTarget.dataset.bookId;
+            if (!confirm('Bu kitabı (ID: ' + bookId + ') silmek istediğinizden emin misiniz?')) {
+                return;
+            }
 
-                        if (!bookId) {
-                            console.error('Book ID silme işlemi için bulunamadı.');
-                            return;
-                        }
-                        console.log("Kitap ID:", bookId, "silmeye çalışılıyor.");
+            try {
+                // KRİTİK DÜZELTME: Standart REST API adresini kullanın.
+                // Backend'deki BookController'ınızın @DeleteMapping("/{id}") ve @RequestMapping("/api/books") kullandığından emin olun.
+                const response = await fetch(`/employee/books/delete/${bookId}`, {
+                    method: 'DELETE'
+                });
 
-                        const confirmDelete = confirm('Bu kitabı silmek istediğinizden emin misiniz?');
-                        if (!confirmDelete) {
-                            return;
-                        }
+                // ÖNCE YANITIN DURUMUNU KONTROL ET
+                if (response.ok) {
+                    // Başarılı! Kitap silindi. Sunucudan gelen body boş olsa bile bu blok çalışır.
+                    messageContainer.style.display = 'block';
+                    messageContainer.className = 'alert alert-success'; // Reset classes and add success
+                    messageText.textContent = 'Kitap (ID: ' + bookId + ') başarıyla silindi.';
 
-                        try {
-                            const response = await fetch(`/employee/books/delete/${bookId}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-
-                            const data = await response.json();
-
-                            messageContainer.style.display = 'block';
-                            messageContainer.classList.remove('alert-success', 'alert-danger');
-
-                            if (response.ok) {
-                                messageContainer.classList.add('alert-success');
-                                messageText.textContent = data.message;
-
-                                // 🛠️ BURADAKİ YENİ KONTROL: Satırı kaldırmadan önce varlığını kontrol edin
-                                const rowToRemove = e.currentTarget.closest('tr');
-                                if (rowToRemove) {
-                                    rowToRemove.remove();
-                                } else {
-                                    console.warn("Uyarı: Silinecek tablo satırı DOM'da bulunamadı. Sayfa yenilemesi gerçekleşecek.");
-                                }
-
-                                setTimeout(() => {
-                                     window.location.reload();
-                                 }, 1500);
-                            } else {
-                                messageContainer.classList.add('alert-danger');
-                                messageText.textContent = data.message || 'Kitap silinirken bir hata oluştu.';
-                            }
-                        } catch (error) {
-                            console.error('Fetch işlemi sırasında hata:', error);
-                            messageContainer.style.display = 'block';
-                            messageContainer.classList.remove('alert-success');
-                            messageContainer.classList.add('alert-danger');
-                            messageText.textContent = 'Ağ hatası veya sunucuya ulaşılamıyor.';
-                        }
-                    });
-                    button.dataset.listenerAttached = 'true';
+                    // Satırı DOM'dan kaldır
+                    const rowToRemove = document.getElementById('book-row-' + bookId);
+                    if (rowToRemove) {
+                        rowToRemove.remove();
+                    }
+                } else {
+                    // Sunucu bir hata kodu döndürdü (4xx, 5xx). Hata mesajını JSON olarak almaya çalış.
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Bilinmeyen bir sunucu hatası oluştu.');
                 }
-            });
-        }
 
-        initializeBookDelete();
+            } catch (error) {
+                // Bu blok, ağ hatası olduğunda VEYA yukarıda bizim fırlattığımız hata (`throw new Error`) durumunda çalışır.
+                console.error('Silme işlemi sırasında hata:', error);
+                messageContainer.style.display = 'block';
+                messageContainer.className = 'alert alert-danger';
+                messageText.textContent = error.message || 'Ağ hatası veya sunucuya ulaşılamıyor.';
+            }
+        });
     </script>
 </div>
 </body>
