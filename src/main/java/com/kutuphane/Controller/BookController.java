@@ -74,10 +74,12 @@ public class BookController {
         if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole()) && !"ADMIN".equals(loggedUser.getRole()))) {
             return "redirect:/login";
         }
+
         model.addAttribute("loggedUser", loggedUser);
         model.addAttribute("book", new Book()); // Yeni kitap objesi
         model.addAttribute("authors", authorService.findAll()); // Yazar listesi
         model.addAttribute("publishers", publisherService.findAll()); // Yayıncı listesi
+
         return "fragments/add-book-content :: contentFragment";
     }
     @PostMapping("/employee/api/books/add")

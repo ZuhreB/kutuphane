@@ -15,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 @Controller
@@ -50,7 +48,6 @@ public class BorrowController {
         // Ödünç verme için gerekli veriler (örneğin kitaplar, kullanıcılar)
         model.addAttribute("books", bookService.getAllBooks());
         model.addAttribute("users", userService.getAllUsers());
-        System.out.println("aesrdyugoıjpkjhu.........................");
         return "fragments/lend-book-form :: contentFragment";
     }
 
@@ -59,11 +56,10 @@ public class BorrowController {
     public ResponseEntity<Map<String, Object>> createBorrow(
             @RequestBody Map<String, Long> requestData,
             HttpSession session
-    ) {
+    ){
         Map<String, Object> response = new HashMap<>();
         User loggedUser = (User) session.getAttribute("loggedUser");
 
-        System.out.println(".................heeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeey......................");
         if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole()) && !"ADMIN".equals(loggedUser.getRole()))) {
             response.put("success", false);
             response.put("message", "Yetkisiz işlem");
@@ -77,9 +73,53 @@ public class BorrowController {
             // Ödünç verme işlemini gerçekleştir
             Borrow borrow = borrowService.lendBook(userId, bookId);
 
-            System.out.println("nerdeyseeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
             response.put("success", true);
             response.put("message", "Kitap ödünç verildi");
+            response.put("borrowId", borrow.getBorrowID());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/employee/fragments/borrows/getback")
+    public String getBackBookFragment(Model model, HttpSession session) {
+        User loggedUser = (User) session.getAttribute("loggedUser");
+        if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole()) && !"ADMIN".equals(loggedUser.getRole()))) {
+            return "redirect:/login";
+        }
+        // geri alma için gerekli veriler
+        model.addAttribute("books", bookService.getAllBooks());
+        model.addAttribute("users", userService.getAllUsers());
+        return "fragments/get-back-book :: contentFragment";
+    }
+
+    @PostMapping("/api/borrows/return")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> returnBorrow(
+            @RequestBody Map<String, Long> requestData,
+            HttpSession session
+    ){
+        Map<String, Object> response = new HashMap<>();
+        User loggedUser = (User) session.getAttribute("loggedUser");
+
+        if (loggedUser == null || (!"EMPLOYEE".equals(loggedUser.getRole()) && !"ADMIN".equals(loggedUser.getRole()))) {
+            response.put("success", false);
+            response.put("message", "Yetkisiz işlem");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+
+        try {
+            Long userId = requestData.get("userID");
+            Long bookId = requestData.get("bookID");
+
+            // Ödünç verme işlemini gerçekleştir
+            Borrow borrow = borrowService.returnBook(userId, bookId);
+
+            response.put("success", true);
+            response.put("message", "Kitap geri alındı");
             response.put("borrowId", borrow.getBorrowID());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -97,7 +137,7 @@ public class BorrowController {
             return ResponseEntity.status(403).body(Map.of("message", "Bu işlem için yetkiniz yok."));
         }
         try {
-            borrowService.returnBook(borrowId);
+            borrowService.returnBook(borrowId,loggedUser.getUserID());
             return ResponseEntity.ok(Map.of("message", "Kitap başarıyla iade alındı."));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));

@@ -69,7 +69,8 @@ public class EmployeeController {
         }
         model.addAttribute("loggedUser", loggedUser);
         model.addAttribute("newUser", new User());
-        return "fragments/member-registration :: contentFragment";
+        System.out.println("member registrationa gitmek üzere");
+        return "fragments/employee-registration :: contentFragment";
 
     }
     @PostMapping("/api/employee/register")
@@ -86,6 +87,7 @@ public class EmployeeController {
 
         try {
             user.setRole("EMPLOYEE");
+            System.out.println(user.getRole()+"eklenen role");
             User savedUser = userService.saveUser(user);
             response.put("success", true);
             response.put("user", savedUser);

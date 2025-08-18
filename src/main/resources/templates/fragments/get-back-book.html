@@ -31,7 +31,7 @@
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn btn-primary">Ödünç Ver</button>
+            <button type="submit" class="btn btn-primary">Geri Al</button>
         </div>
     </form>
 
@@ -46,7 +46,7 @@
             };
 
             try {
-                const response = await fetch('/api/borrows/create', {
+                const response = await fetch('/api/borrows/return', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -60,7 +60,7 @@
                     throw new Error(result.message || 'Ödünç verme işlemi başarısız');
                 }
 
-                showMessage('Kitap başarıyla ödünç verildi!', 'success');
+                showMessage('Kitap başarıyla geri alındı!', 'success');
                 e.target.reset();
             } catch (error) {
                 showMessage('Hata: ' + error.message, 'danger');

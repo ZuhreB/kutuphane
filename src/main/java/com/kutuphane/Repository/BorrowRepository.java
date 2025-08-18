@@ -2,6 +2,7 @@ package com.kutuphane.Repository;
 
 import com.kutuphane.Entity.Book;
 import com.kutuphane.Entity.Borrow;
+import com.kutuphane.Entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,7 @@ public interface BorrowRepository extends JpaRepository<Borrow, Long> {
     List<Borrow> findBorrowedBooks();
     boolean existsByBook_BookIDAndStatus(Long bookId, String status);
     void deleteByBook_BookID(Long id);
+    Optional<Borrow>  findByUserAndBookAndStatus(User user, Book book, String status);
 
     List<Borrow> findByUser_UserIDOrderByBorrowDateDesc(Long userId);
 }

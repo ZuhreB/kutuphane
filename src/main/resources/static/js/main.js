@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const sidenav = document.getElementById("mySidenav");
     const overlay = document.getElementById("overlay");
-    const mainArticle = document.getElementById('mainArticle'); // mainArticle elementini al
+    const mainArticle = document.getElementById('mainArticle');
 
-    // toggleNav fonksiyonu (global erişim için window objesine eklenmiş)
     function toggleNav() {
         const isOpen = sidenav.style.width === "250px";
         if (isOpen) {
@@ -28,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         link.addEventListener('click', async (event) => {
             event.preventDefault(); // Sayfanın yeniden yüklenmesini engelle
 
+            //tıklannan linkin html ini adresini yükler
             const fragmentUrl = link.dataset.fragmentUrl;
 
             // Tüm aktif linklerin 'active' sınıfını kaldır
@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
             mainArticle.innerHTML = '<div class="loading-placeholder" style="text-align: center; padding: 20px;">İçerik Yükleniyor...</div>';
 
             try {
+            //belirlenen adrese bir ağ isteği göndercek html sunucuya çağırcak
                 const response = await fetch(fragmentUrl);
                 if (response.ok) {
                     const htmlContent = await response.text();

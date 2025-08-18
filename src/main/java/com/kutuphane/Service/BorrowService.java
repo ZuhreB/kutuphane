@@ -12,8 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BorrowService {
@@ -59,12 +59,17 @@ public class BorrowService {
     }
 
     @Transactional
-    public void returnBook(Long borrowId) {
+    public Borrow returnBook(Long userId,Long bookId) {
         // 1. Ödünç kaydını bul, bulamazsan hata fırlat
-        Borrow borrow = borrowRepository.findById(borrowId)
-                .orElseThrow(() -> new EntityNotFoundException("Ödünç kaydı bulunamadı: " + borrowId));
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new EntityNotFoundException("Ödünç kaydı bulunamadı: " + bookId));
 
-        // 2. Kitap zaten iade edilmişse, tekrar işlem yapmayı engelle.
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
+
+        Borrow borrow = borrowRepository.findByUserAndBookAndStatus(user, book, "BORROWED")
+                .orElseThrow(() -> new IllegalStateException("Bu kullanıcı tarafından ödünç alınmış aktif bir kayıt bulunamadı."));
+
         if ("RETURNED".equals(borrow.getStatus())) {
             throw new IllegalStateException("Bu kitap zaten iade edilmiş.");
         }
@@ -74,8 +79,8 @@ public class BorrowService {
         borrow.setActualReturnDate(LocalDate.now().atStartOfDay());
 
         // 4. Kitabın stok sayısını 1 artır.
-        Book book = borrow.getBook();
         book.setAvailableCopies(book.getAvailableCopies() + 1);
+        return borrowRepository.save(borrow);
     }
 
 }
